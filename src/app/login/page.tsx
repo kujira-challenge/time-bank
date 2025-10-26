@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 export const dynamic = 'force-dynamic';
 import { createClient } from '@/lib/supabase/client';
@@ -8,42 +9,49 @@ import Link from 'next/link';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const supabase = createClient();
+  const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
     setMessage(null);
 
-    // メールアドレスの検証
+    // 入力検証
     if (!email || !email.includes('@')) {
       setMessage({ type: 'error', text: '有効なメールアドレスを入力してください' });
       setIsSubmitting(false);
       return;
     }
 
+    if (!password || password.length < 6) {
+      setMessage({ type: 'error', text: 'パスワードは6文字以上で入力してください' });
+      setIsSubmitting(false);
+      return;
+    }
+
     try {
-      const { error } = await supabase.auth.signInWithOtp({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
-        options: {
-          emailRedirectTo: `${window.location.origin}/auth/callback`,
-        },
+        password,
       });
 
       if (error) {
-        // 招待されていないメールの場合のエラーメッセージ
         setMessage({
           type: 'error',
-          text: 'このメールアドレスは招待されていません。管理者にお問い合わせください。'
+          text: 'メールアドレスまたはパスワードが正しくありません。',
         });
-      } else {
+      } else if (data.user) {
         setMessage({
           type: 'success',
-          text: 'ログインリンクをメールで送信しました。メールをご確認ください。',
+          text: 'ログインに成功しました。リダイレクトしています...',
         });
-        setEmail('');
+        // ログイン成功後、ダッシュボードにリダイレクト
+        router.push('/dashboard');
+        router.refresh();
       }
     } catch (error) {
       setMessage({ type: 'error', text: '予期しないエラーが発生しました' });
@@ -67,9 +75,7 @@ export default function LoginPage() {
               <p className="text-sm text-blue-800">
                 <strong>招待制ログイン</strong>
                 <br />
-                招待されたメールアドレスでログインしてください。
-                <br />
-                メールアドレスを入力すると、ログイン用のリンクが送信されます。
+                招待されたメールアドレスとパスワードでログインしてください。
               </p>
             </div>
           </div>
@@ -79,7 +85,7 @@ export default function LoginPage() {
               <p className="text-sm text-yellow-800">
                 <strong>ご注意</strong>
                 <br />
-                このシステムは招待制です。未招待のメールアドレスではログインできません。
+                このシステムは招待制です。アカウントが作成されていない場合はログインできません。
               </p>
             </div>
           </div>
@@ -105,7 +111,7 @@ export default function LoginPage() {
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-                招待されたメールアドレス
+                メールアドレス
               </label>
               <input
                 id="email"
@@ -122,16 +128,34 @@ export default function LoginPage() {
             </div>
 
             <div>
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
+                パスワード
+              </label>
+              <input
+                id="password"
+                name="password"
+                type="password"
+                autoComplete="current-password"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                placeholder="パスワードを入力"
+                disabled={isSubmitting}
+              />
+            </div>
+
+            <div>
               <button
                 type="submit"
-                disabled={isSubmitting || !email}
+                disabled={isSubmitting || !email || !password}
                 className={`w-full py-3 px-4 rounded-md font-medium transition-colors ${
-                  isSubmitting || !email
+                  isSubmitting || !email || !password
                     ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                     : 'bg-blue-600 text-white hover:bg-blue-700'
                 }`}
               >
-                {isSubmitting ? '送信中...' : 'ログインリンクを送信'}
+                {isSubmitting ? 'ログイン中...' : 'ログイン'}
               </button>
             </div>
           </form>
