@@ -11,13 +11,9 @@
 ---
 
 ## 👤 デモアカウント
-| 種別 | メールアドレス | 備考 |
-|------|----------------|------|
-| オーナー | owner@example.com | 管理者（Admin） |
-| メンバーA | a@example.com | 通常ユーザー |
-| メンバーB | b@example.com | 通常ユーザー |
+個別連携
 
-> 現在、Supabase Authentication によって登録済みユーザーのみがログインできます。  
+> 現在、Supabase Authentication によって登録済みユーザーのみがログインできます。
 > サインアップは管理者が Supabase Console から招待します。
 
 ---
@@ -46,13 +42,11 @@
   週別・タグ別・累計時間の集計表示（SPICE風グラフ）
 
 ### その他機能
-- 👥 **ユーザー管理** `/settings/users`  
+- 👥 **ユーザー管理** `/settings/users`
   Supabaseのprofilesテーブルを参照（Read-only表示）
-- 🧭 **マイページ** `/mypage`  
+- 🧭 **マイページ** `/mypage`
   自分の登録履歴を閲覧
 - 🔒 **ログイン／ログアウト** `/login`, `/auth/callback`
-- ⚙️ **テンプレート機能** `/settings/templates`  
-  Figmaテンプレート参照（ON/OFF可）
 
 ---
 
