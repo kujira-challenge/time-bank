@@ -45,11 +45,8 @@ export default function LoginPage() {
           text: 'メールアドレスまたはパスワードが正しくありません。',
         });
       } else if (data.user) {
-        setMessage({
-          type: 'success',
-          text: 'ログインに成功しました。リダイレクトしています...',
-        });
-        // ログイン成功後、ダッシュボードにリダイレクト
+        // ログイン成功後、メッセージを表示せずすぐにリダイレクト
+        // これによりメッセージとリダイレクトの競合を回避
         router.push('/dashboard');
         router.refresh();
       }

@@ -21,7 +21,10 @@ export default async function Home() {
               時間銀行とプロジェクト管理のためのアプリ
             </p>
           </div>
-          <div className="flex gap-4">
+          <div className="flex gap-4 items-center">
+            <Link href="/help" className="text-gray-600 hover:text-gray-900">
+              ヘルプ
+            </Link>
             {user ? (
               <>
                 <Link href="/mypage" className="text-blue-600 hover:text-blue-800">

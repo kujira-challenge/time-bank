@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { getUserWeeklyData, getTagDistribution, getTopContributors, getTopByValueScore, getUserValueScore } from '@/lib/dashboard/aggregations';
 import { WeeklyLineChart, TagPieChart, TopContributorsBarChart } from './DashboardCharts';
+import CSVExportButton from '@/components/CSVExportButton';
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -35,12 +36,7 @@ export default async function DashboardPage() {
             <h1 className="text-3xl font-bold text-gray-900 mt-2">ダッシュボード</h1>
             <p className="text-gray-600 mt-1">時間銀行の可視化と分析</p>
           </div>
-          <Link
-            href={`/api/exports/entries.csv?month=${new Date().toISOString().slice(0, 7)}`}
-            className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
-          >
-            当月CSVエクスポート
-          </Link>
+          <CSVExportButton />
         </div>
 
         {/* Value Score Stats */}
