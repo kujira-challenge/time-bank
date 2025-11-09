@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 export const dynamic = 'force-dynamic';
 import { createClient } from '@/lib/supabase/client';
@@ -14,6 +14,19 @@ export default function LoginPage() {
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const supabase = createClient();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectTo = searchParams.get('next') || '/dashboard';
+
+  // URLパラメータからエラーメッセージを取得
+  useEffect(() => {
+    const msg = searchParams.get('msg');
+    if (msg === 'not_invited') {
+      setMessage({
+        type: 'error',
+        text: 'このアカウントは招待されていないため、アクセスできません。',
+      });
+    }
+  }, [searchParams]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -45,9 +58,10 @@ export default function LoginPage() {
           text: 'メールアドレスまたはパスワードが正しくありません。',
         });
       } else if (data.user) {
-        // ログイン成功後、メッセージを表示せずすぐにリダイレクト
-        // これによりメッセージとリダイレクトの競合を回避
-        router.push('/dashboard');
+        // ログイン成功後、元々アクセスしようとしたページまたはダッシュボードにリダイレクト
+        // セキュリティのため、内部URLのみを許可
+        const safeRedirect = redirectTo.startsWith('/') ? redirectTo : '/dashboard';
+        router.push(safeRedirect);
         router.refresh();
       }
     } catch (error) {
