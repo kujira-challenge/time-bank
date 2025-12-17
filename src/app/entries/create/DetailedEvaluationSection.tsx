@@ -1,13 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import type { EvaluationAxis, EvaluationAxisKey } from '@/types';
-
-type EvaluationItem = {
-  axis_key: EvaluationAxisKey;
-  score: number;
-  comment: string;
-};
+import type { EvaluationAxis, EvaluationItem, EvaluationAxisKey } from '@/types';
 
 type DetailedEvaluationSectionProps = {
   evaluationAxes: EvaluationAxis[];

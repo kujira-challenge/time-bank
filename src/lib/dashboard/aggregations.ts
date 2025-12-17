@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server';
-import type { QuarterlySummary, EvaluationAxisScore, EvaluationAxis, EntryDB } from '@/types';
+import type { QuarterlySummary, EvaluationAxisScore, EvaluationAxis } from '@/types';
 
 export type WeeklyData = {
   week: string;
@@ -347,15 +347,16 @@ export async function getRecentActivities(limit: number = 5): Promise<RecentActi
     return [];
   }
 
-  return entries.map((e: any) => ({
-    id: e.id,
-    week_start: e.week_start,
-    hours: e.hours,
-    tags: e.tags || [],
-    note: e.note || '',
-    contributor_name: e.contributor?.display_name || 'Unknown',
-    recipient_name: e.recipient?.display_name || null,
-    created_at: e.created_at,
+  // Supabaseのjoinクエリ結果をマッピング
+  return entries.map((e: Record<string, unknown>) => ({
+    id: e.id as string,
+    week_start: e.week_start as string,
+    hours: e.hours as number,
+    tags: (e.tags as string[]) || [],
+    note: (e.note as string) || '',
+    contributor_name: ((e.contributor as { display_name?: string } | null)?.display_name) || 'Unknown',
+    recipient_name: ((e.recipient as { display_name?: string } | null)?.display_name) || null,
+    created_at: e.created_at as string,
   }));
 }
 

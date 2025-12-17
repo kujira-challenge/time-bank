@@ -143,3 +143,12 @@ export type EvaluationAxisScore = {
   avg_score: number; // 平均スコア 0-5
   count: number;     // 評価件数
 };
+
+/**
+ * 評価アイテム（フォーム入力用）
+ */
+export type EvaluationItem = {
+  axis_key: EvaluationAxisKey;
+  score: number; // 1-5
+  comment: string;
+};

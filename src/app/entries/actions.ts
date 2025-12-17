@@ -3,6 +3,7 @@
 import { requireUser } from '@/lib/auth/requireUser';
 import { entrySchema, entryUpdateSchema } from '@/lib/validation/schemas';
 import { revalidatePath } from 'next/cache';
+import type { EvaluationItem } from '@/types';
 
 export async function createEntry(formData: FormData) {
   try {
@@ -35,9 +36,9 @@ export async function createEntry(formData: FormData) {
     // Insert detailed evaluations if provided
     const evaluationsStr = formData.get('detailed_evaluations') as string | null;
     if (evaluationsStr && entry) {
-      const evaluations = JSON.parse(evaluationsStr);
+      const evaluations = JSON.parse(evaluationsStr) as EvaluationItem[];
       if (evaluations.length > 0 && rawData.recipient_id) {
-        const evaluationRecords = evaluations.map((ev: any) => ({
+        const evaluationRecords = evaluations.map((ev) => ({
           entry_id: entry.id,
           evaluator_id: user.id,
           evaluated_id: rawData.recipient_id,

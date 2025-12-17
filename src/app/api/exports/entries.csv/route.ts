@@ -37,16 +37,18 @@ export async function GET(request: NextRequest) {
 
     // Generate CSV
     const headers = ['週開始日', '時間', 'タグ', 'メモ', '貢献者', 'メール', '作成日時'];
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const rows = entries.map((entry: any) => [
-      entry.week_start,
-      entry.hours,
-      (entry.tags || []).join('; '),
-      (entry.note || '').replace(/"/g, '""'),
-      entry.contributor?.display_name || 'Unknown',
-      entry.contributor?.email || '',
-      new Date(entry.created_at).toLocaleString('ja-JP'),
-    ]);
+    const rows = entries.map((entry: Record<string, unknown>) => {
+      const contributor = entry.contributor as { display_name?: string; email?: string } | null;
+      return [
+        entry.week_start as string,
+        entry.hours as number,
+        ((entry.tags as string[]) || []).join('; '),
+        ((entry.note as string) || '').replace(/"/g, '""'),
+        contributor?.display_name || 'Unknown',
+        contributor?.email || '',
+        new Date(entry.created_at as string).toLocaleString('ja-JP'),
+      ];
+    });
 
     const csvContent = [
       headers.join(','),

@@ -1,77 +1,9 @@
-'use client';
-
-import { useState, useEffect } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { Suspense } from 'react';
+import LoginForm from './LoginForm';
 
 export const dynamic = 'force-dynamic';
-import { createClient } from '@/lib/supabase/client';
-import Link from 'next/link';
 
 export default function LoginPage() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
-  const supabase = createClient();
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const redirectTo = searchParams.get('next') || '/dashboard';
-
-  // URLパラメータからエラーメッセージを取得
-  useEffect(() => {
-    const msg = searchParams.get('msg');
-    if (msg === 'not_invited') {
-      setMessage({
-        type: 'error',
-        text: 'このアカウントは招待されていないため、アクセスできません。',
-      });
-    }
-  }, [searchParams]);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-    setMessage(null);
-
-    // 入力検証
-    if (!email || !email.includes('@')) {
-      setMessage({ type: 'error', text: '有効なメールアドレスを入力してください' });
-      setIsSubmitting(false);
-      return;
-    }
-
-    if (!password || password.length < 6) {
-      setMessage({ type: 'error', text: 'パスワードは6文字以上で入力してください' });
-      setIsSubmitting(false);
-      return;
-    }
-
-    try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
-      if (error) {
-        setMessage({
-          type: 'error',
-          text: 'メールアドレスまたはパスワードが正しくありません。',
-        });
-      } else if (data.user) {
-        // ログイン成功後、元々アクセスしようとしたページまたはダッシュボードにリダイレクト
-        // セキュリティのため、内部URLのみを許可
-        const safeRedirect = redirectTo.startsWith('/') ? redirectTo : '/dashboard';
-        router.push(safeRedirect);
-        router.refresh();
-      }
-    } catch (error) {
-      setMessage({ type: 'error', text: '予期しないエラーが発生しました' });
-      console.error('Login error:', error);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
@@ -79,105 +11,9 @@ export default function LoginPage() {
         <h2 className="text-center text-xl text-gray-600">ログイン</h2>
       </div>
 
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
-          <div className="mb-6">
-            <div className="bg-blue-50 border border-blue-200 rounded-md p-4">
-              <p className="text-sm text-blue-800">
-                <strong>招待制ログイン</strong>
-                <br />
-                招待されたメールアドレスとパスワードでログインしてください。
-              </p>
-            </div>
-          </div>
-
-          <div className="mb-6">
-            <div className="bg-yellow-50 border border-yellow-200 rounded-md p-4">
-              <p className="text-sm text-yellow-800">
-                <strong>ご注意</strong>
-                <br />
-                このシステムは招待制です。アカウントが作成されていない場合はログインできません。
-              </p>
-            </div>
-          </div>
-
-          {message && (
-            <div
-              className={`mb-6 p-4 rounded-md ${
-                message.type === 'success'
-                  ? 'bg-green-50 border border-green-200'
-                  : 'bg-red-50 border border-red-200'
-              }`}
-            >
-              <p
-                className={`text-sm ${
-                  message.type === 'success' ? 'text-green-800' : 'text-red-800'
-                }`}
-              >
-                {message.text}
-              </p>
-            </div>
-          )}
-
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-                メールアドレス
-              </label>
-              <input
-                id="email"
-                name="email"
-                type="email"
-                autoComplete="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                placeholder="your.email@example.com"
-                disabled={isSubmitting}
-              />
-            </div>
-
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
-                パスワード
-              </label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                autoComplete="current-password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                placeholder="パスワードを入力"
-                disabled={isSubmitting}
-              />
-            </div>
-
-            <div>
-              <button
-                type="submit"
-                disabled={isSubmitting || !email || !password}
-                className={`w-full py-3 px-4 rounded-md font-medium transition-colors ${
-                  isSubmitting || !email || !password
-                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                    : 'bg-blue-600 text-white hover:bg-blue-700'
-                }`}
-              >
-                {isSubmitting ? 'ログイン中...' : 'ログイン'}
-              </button>
-            </div>
-          </form>
-
-          <div className="mt-6">
-            <Link href="/" className="text-sm text-blue-600 hover:text-blue-800">
-              ← ホームに戻る
-            </Link>
-          </div>
-        </div>
-      </div>
+      <Suspense fallback={<div className="text-center mt-8">読み込み中...</div>}>
+        <LoginForm />
+      </Suspense>
     </div>
   );
 }

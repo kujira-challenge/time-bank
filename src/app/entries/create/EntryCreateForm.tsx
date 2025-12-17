@@ -7,13 +7,7 @@ import TagMultiSelect from '@/components/TagMultiSelect';
 import { createEntry, getAllTags } from '../actions';
 import { getMondayOfWeek, formatDateISO } from '@/lib/validation/schemas';
 import DetailedEvaluationSection from './DetailedEvaluationSection';
-import type { EvaluationAxis, EvaluationAxisKey } from '@/types';
-
-type EvaluationItem = {
-  axis_key: EvaluationAxisKey;
-  score: number;
-  comment: string;
-};
+import type { EvaluationAxis, EvaluationItem } from '@/types';
 
 type UserOption = {
   id: string;
