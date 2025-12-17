@@ -1,9 +1,23 @@
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
-import { getUserWeeklyData, getTagDistribution, getTopContributors, getTopByValueScore, getUserValueScore } from '@/lib/dashboard/aggregations';
+import {
+  getUserWeeklyData,
+  getTagDistribution,
+  getTopContributors,
+  getTopByValueScore,
+  getUserValueScore,
+  getKPIStats,
+  getLatestQuarterlySummary,
+  getEvaluationTrends,
+  getRecentActivities,
+} from '@/lib/dashboard/aggregations';
 import { WeeklyLineChart, TagPieChart, TopContributorsBarChart } from './DashboardCharts';
 import CSVExportButton from '@/components/CSVExportButton';
+import DashboardStats from './DashboardStats';
+import QuarterlySummaryCard from './QuarterlySummaryCard';
+import EvaluationTrendsCard from './EvaluationTrendsCard';
+import RecentActivitiesCard from './RecentActivitiesCard';
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -17,12 +31,26 @@ export default async function DashboardPage() {
   }
 
   // Fetch all dashboard data in parallel
-  const [weeklyData, tagData, topContributors, topByValue, userScore] = await Promise.all([
+  const [
+    weeklyData,
+    tagData,
+    topContributors,
+    topByValue,
+    userScore,
+    kpiStats,
+    quarterlySummary,
+    evaluationTrends,
+    recentActivities,
+  ] = await Promise.all([
     getUserWeeklyData(user.id, 12),
     getTagDistribution(10),
     getTopContributors(10),
     getTopByValueScore(10),
     getUserValueScore(user.id),
+    getKPIStats(user.id),
+    getLatestQuarterlySummary(user.id),
+    getEvaluationTrends(user.id),
+    getRecentActivities(5),
   ]);
 
   return (
@@ -39,28 +67,16 @@ export default async function DashboardPage() {
           <CSVExportButton />
         </div>
 
-        {/* Value Score Stats */}
-        <div className="grid md:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white p-6 rounded-lg shadow">
-            <h3 className="text-sm font-medium text-gray-600 mb-2">総記録時間</h3>
-            <p className="text-3xl font-bold text-blue-600">{userScore.totalHours.toFixed(1)}h</p>
-          </div>
-          <div className="bg-white p-6 rounded-lg shadow">
-            <h3 className="text-sm font-medium text-gray-600 mb-2">平均評価</h3>
-            <p className="text-3xl font-bold text-yellow-600">{userScore.avgRating.toFixed(1)} / 5</p>
-          </div>
-          <div className="bg-white p-6 rounded-lg shadow">
-            <h3 className="text-sm font-medium text-gray-600 mb-2">評価件数</h3>
-            <p className="text-3xl font-bold text-green-600">{userScore.feedbackCount}</p>
-          </div>
-          <div className="bg-white p-6 rounded-lg shadow">
-            <h3 className="text-sm font-medium text-gray-600 mb-2">価値スコア</h3>
-            <p className="text-3xl font-bold text-purple-600">{userScore.valueScore.toFixed(1)}</p>
-            <p className="text-xs text-gray-500 mt-1">時間×1.0 + 評価×2.0</p>
-          </div>
-        </div>
+        {/* 1. KPIカードエリア（5枚・横並び） */}
+        <DashboardStats stats={kpiStats} />
 
-        {/* Charts Grid */}
+        {/* 2. 最新クォータリーリフレクションのサマリーカード */}
+        <QuarterlySummaryCard summary={quarterlySummary} />
+
+        {/* 3. 評価傾向（10評価軸・チャート切替） */}
+        <EvaluationTrendsCard trends={evaluationTrends} />
+
+        {/* 4. グラフエリア（時間推移・配分・プロジェクト別） */}
         <div className="grid md:grid-cols-2 gap-8 mb-8">
           {/* Weekly Progress */}
           <div className="bg-white p-6 rounded-lg shadow">
@@ -81,8 +97,11 @@ export default async function DashboardPage() {
           <TopContributorsBarChart data={topContributors} />
         </div>
 
+        {/* 5. 最近の活動（最新5件） */}
+        <RecentActivitiesCard activities={recentActivities} />
+
         {/* Monthly Rankings Tables */}
-        <div className="grid md:grid-cols-2 gap-8">
+        <div className="grid md:grid-cols-2 gap-8 mt-8">
           {/* Hours Ranking */}
           <div className="bg-white p-6 rounded-lg shadow">
             <h2 className="text-xl font-semibold text-gray-900 mb-4">月次ランキング（時間）</h2>

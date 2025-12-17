@@ -54,6 +54,7 @@ export const entrySchema = z.object({
     .max(1000, 'Note must not exceed 1000 characters')
     .default(''),
   contributor_id: z.string().uuid(),
+  recipient_id: z.string().uuid().nullable().optional(),
 });
 
 export type EntryInput = z.input<typeof entrySchema>;

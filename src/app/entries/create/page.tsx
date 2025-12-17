@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import EntryCreateForm from './EntryCreateForm';
+import { getEvaluationAxes } from '@/lib/dashboard/aggregations';
 
 export default async function EntriesCreatePage() {
   const supabase = await createClient();
@@ -22,6 +23,16 @@ export default async function EntriesCreatePage() {
     .eq('id', user.id)
     .single();
 
+  // 全ユーザー一覧を取得（recipient選択用）
+  const { data: allUsers } = await supabase
+    .from('profiles')
+    .select('id, display_name')
+    .eq('active', true)
+    .order('display_name');
+
+  // 評価軸マスタデータを取得
+  const evaluationAxes = await getEvaluationAxes();
+
   const displayName = profile?.display_name || 'ユーザー';
   const email = profile?.email || user.email;
 
@@ -40,6 +51,8 @@ export default async function EntriesCreatePage() {
           <EntryCreateForm
             displayName={displayName}
             email={email || ''}
+            allUsers={allUsers || []}
+            evaluationAxes={evaluationAxes}
           />
         </div>
       </div>

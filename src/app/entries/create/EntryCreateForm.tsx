@@ -6,15 +6,32 @@ import { useRouter } from 'next/navigation';
 import TagMultiSelect from '@/components/TagMultiSelect';
 import { createEntry, getAllTags } from '../actions';
 import { getMondayOfWeek, formatDateISO } from '@/lib/validation/schemas';
+import DetailedEvaluationSection from './DetailedEvaluationSection';
+import type { EvaluationAxis, EvaluationAxisKey } from '@/types';
+
+type EvaluationItem = {
+  axis_key: EvaluationAxisKey;
+  score: number;
+  comment: string;
+};
+
+type UserOption = {
+  id: string;
+  display_name: string;
+};
 
 type EntryCreateFormProps = {
   displayName: string;
   email: string;
+  allUsers: UserOption[];
+  evaluationAxes: EvaluationAxis[];
 };
 
 export default function EntryCreateForm({
   displayName,
   email,
+  allUsers,
+  evaluationAxes,
 }: EntryCreateFormProps) {
   const router = useRouter();
   const [formData, setFormData] = useState({
@@ -22,7 +39,9 @@ export default function EntryCreateForm({
     hours: '',
     tags: [] as string[],
     note: '',
+    recipient_id: '',
   });
+  const [detailedEvaluations, setDetailedEvaluations] = useState<EvaluationItem[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [tagSuggestions, setTagSuggestions] = useState<string[]>([]);
@@ -51,6 +70,8 @@ export default function EntryCreateForm({
       formDataObj.append('hours', formData.hours);
       formDataObj.append('tags', JSON.stringify(formData.tags));
       formDataObj.append('note', formData.note);
+      formDataObj.append('recipient_id', formData.recipient_id);
+      formDataObj.append('detailed_evaluations', JSON.stringify(detailedEvaluations));
 
       const result = await createEntry(formDataObj);
 
@@ -166,6 +187,30 @@ export default function EntryCreateForm({
           />
         </div>
 
+        {/* Recipient - 時間を受け取った相手 */}
+        <div>
+          <label htmlFor="recipient_id" className="block text-sm font-medium text-gray-700 mb-2">
+            時間を受け取った相手（任意）
+          </label>
+          <select
+            id="recipient_id"
+            name="recipient_id"
+            value={formData.recipient_id}
+            onChange={(e) => setFormData((prev) => ({ ...prev, recipient_id: e.target.value }))}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          >
+            <option value="">-- 選択しない --</option>
+            {allUsers.map((user) => (
+              <option key={user.id} value={user.id}>
+                {user.display_name}
+              </option>
+            ))}
+          </select>
+          <p className="text-xs text-gray-500 mt-1">
+            この時間を誰のために提供したかを選択できます
+          </p>
+        </div>
+
         {/* Note */}
         <div>
           <label htmlFor="note" className="block text-sm font-medium text-gray-700 mb-2">
@@ -185,6 +230,15 @@ export default function EntryCreateForm({
             {formData.note.length} / 1000 文字
           </p>
         </div>
+
+        {/* 相手への詳細評価（任意） */}
+        {formData.recipient_id && (
+          <DetailedEvaluationSection
+            evaluationAxes={evaluationAxes}
+            selectedEvaluations={detailedEvaluations}
+            onChange={setDetailedEvaluations}
+          />
+        )}
 
         {/* Submit */}
         <div className="pt-6 flex gap-4">

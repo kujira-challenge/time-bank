@@ -8,21 +8,53 @@ export async function createEntry(formData: FormData) {
   try {
     const { supabase, user } = await requireUser();
 
+    const recipientIdStr = formData.get('recipient_id') as string | null;
     const rawData = {
       week_start: formData.get('week_start') as string,
       hours: parseFloat(formData.get('hours') as string),
       tags: JSON.parse(formData.get('tags') as string),
       note: formData.get('note') as string,
       contributor_id: user.id,
+      recipient_id: recipientIdStr && recipientIdStr !== '' ? recipientIdStr : null,
     };
 
     // Validate with Zod
     const validatedData = entrySchema.parse(rawData);
 
-    const { error } = await supabase.from('entries').insert(validatedData);
+    // Insert entry
+    const { data: entry, error: entryError } = await supabase
+      .from('entries')
+      .insert(validatedData)
+      .select('id')
+      .single();
 
-    if (error) {
-      return { success: false, error: error.message };
+    if (entryError) {
+      return { success: false, error: entryError.message };
+    }
+
+    // Insert detailed evaluations if provided
+    const evaluationsStr = formData.get('detailed_evaluations') as string | null;
+    if (evaluationsStr && entry) {
+      const evaluations = JSON.parse(evaluationsStr);
+      if (evaluations.length > 0 && rawData.recipient_id) {
+        const evaluationRecords = evaluations.map((ev: any) => ({
+          entry_id: entry.id,
+          evaluator_id: user.id,
+          evaluated_id: rawData.recipient_id,
+          axis_key: ev.axis_key,
+          score: ev.score,
+          comment: ev.comment || '',
+        }));
+
+        const { error: evalError } = await supabase
+          .from('detailed_evaluations')
+          .insert(evaluationRecords);
+
+        if (evalError) {
+          console.error('Failed to insert evaluations:', evalError);
+          // Don't fail the whole operation, just log the error
+        }
+      }
     }
 
     revalidatePath('/entries');
