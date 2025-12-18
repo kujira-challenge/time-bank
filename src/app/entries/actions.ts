@@ -40,8 +40,8 @@ export async function createEntry(formData: FormData) {
       if (evaluations.length > 0 && rawData.recipient_id) {
         const evaluationRecords = evaluations.map((ev) => ({
           entry_id: entry.id,
-          evaluator_id: user.id,
-          evaluated_id: rawData.recipient_id,
+          evaluator_id: rawData.recipient_id,
+          evaluated_id: user.id,
           axis_key: ev.axis_key,
           score: ev.score,
           comment: ev.comment || '',

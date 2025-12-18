@@ -76,8 +76,8 @@ export default function DetailedEvaluationSection({
       {isExpanded && (
         <div className="mt-4 space-y-4">
           <p className="text-sm text-gray-600">
-            時間を提供してくれた相手への評価を記録します。<br />
-            代表的に感じたことを1〜2個選んで評価してください。
+            時間を受け取った相手が、あなた（提供者）に対して感じた評価を記録します。<br />
+            代表的な項目を1〜2個選んで評価してください。
           </p>
 
           {/* 評価項目チェックボックス */}
