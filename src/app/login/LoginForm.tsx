@@ -13,7 +13,7 @@ export default function LoginForm() {
   const supabase = createClient();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const redirectTo = searchParams.get('next') || '/dashboard';
+  const redirectTo = searchParams.get('next') || '/';
 
   // URLパラメータからエラーメッセージを取得
   useEffect(() => {
@@ -56,9 +56,9 @@ export default function LoginForm() {
           text: 'メールアドレスまたはパスワードが正しくありません。',
         });
       } else if (data.user) {
-        // ログイン成功後、元々アクセスしようとしたページまたはダッシュボードにリダイレクト
+        // ログイン成功後、元々アクセスしようとしたページまたはホームにリダイレクト
         // セキュリティのため、内部URLのみを許可
-        const safeRedirect = redirectTo.startsWith('/') ? redirectTo : '/dashboard';
+        const safeRedirect = redirectTo.startsWith('/') ? redirectTo : '/';
         router.push(safeRedirect);
         router.refresh();
       }
