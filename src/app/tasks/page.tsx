@@ -30,6 +30,7 @@ export default async function TasksPage() {
       assignee:profiles!tasks_assignee_id_fkey(*)
     `
     )
+    .is('deleted_at', null) // 論理削除されていないもののみ
     .order('created_at', { ascending: false });
 
   if (error) {
@@ -75,7 +76,10 @@ export default async function TasksPage() {
   };
 
   const TaskCard = ({ task }: { task: TaskWithProfiles }) => (
-    <div className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+    <Link
+      href={`/tasks/${task.id}`}
+      className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow block cursor-pointer"
+    >
       <div className="flex justify-between items-start mb-3">
         <h3 className="text-lg font-semibold text-gray-900">{task.title}</h3>
         <span className={`px-2 py-1 text-xs rounded-full ${getStatusBadgeClass(task.status)}`}>
@@ -115,7 +119,7 @@ export default async function TasksPage() {
           {new Date(task.created_at).toLocaleDateString('ja-JP')}
         </div>
       </div>
-    </div>
+    </Link>
   );
 
   return (

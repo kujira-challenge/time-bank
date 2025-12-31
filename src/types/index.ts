@@ -37,6 +37,19 @@ export type Task = {
   requester_id: string;    // UUID (profiles.id)
   assignee_id: string | null; // UUID (profiles.id) or null
   status: 'open' | 'in_progress' | 'completed' | 'cancelled';
+  deleted_at: string | null; // ISO 8601形式 or null (soft delete)
+  created_at: string;      // ISO 8601形式
+  updated_at: string;      // ISO 8601形式
+};
+
+/**
+ * タスク応募型定義（Supabase用）
+ */
+export type TaskApplication = {
+  id: string;              // UUID
+  task_id: string;         // UUID (tasks.id)
+  applicant_id: string;    // UUID (profiles.id)
+  status: 'applied' | 'withdrawn';
   created_at: string;      // ISO 8601形式
   updated_at: string;      // ISO 8601形式
 };

@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import TagMultiSelect from '@/components/TagMultiSelect';
 import { createEntry, getAllTags } from '../actions';
 import { getMondayOfWeek, formatDateISO } from '@/lib/validation/schemas';
-import DetailedEvaluationSection from './DetailedEvaluationSection';
+// import DetailedEvaluationSection from './DetailedEvaluationSection'; // 一時的に未使用
 import type { EvaluationAxis, EvaluationItem } from '@/types';
 
 type UserOption = {
@@ -17,15 +17,15 @@ type UserOption = {
 type EntryCreateFormProps = {
   displayName: string;
   email: string;
-  allUsers: UserOption[];
-  evaluationAxes: EvaluationAxis[];
+  allUsers: UserOption[]; // 一時的に未使用（recipient撤去のため）
+  evaluationAxes: EvaluationAxis[]; // 一時的に未使用（recipient撤去のため）
 };
 
 export default function EntryCreateForm({
   displayName,
   email,
-  allUsers,
-  evaluationAxes,
+  // allUsers,  // 一時的に未使用（recipient撤去のため）
+  // evaluationAxes, // 一時的に未使用（recipient撤去のため）
 }: EntryCreateFormProps) {
   const router = useRouter();
   const [formData, setFormData] = useState({
@@ -33,9 +33,9 @@ export default function EntryCreateForm({
     hours: '',
     tags: [] as string[],
     note: '',
-    recipient_id: '',
+    // recipient_id: '', // 一時的にUIから撤去（将来的に復活可能性あり）
   });
-  const [detailedEvaluations, setDetailedEvaluations] = useState<EvaluationItem[]>([]);
+  const [detailedEvaluations] = useState<EvaluationItem[]>([]); // 一時的に未使用（recipient撤去のため）
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [tagSuggestions, setTagSuggestions] = useState<string[]>([]);
@@ -64,7 +64,8 @@ export default function EntryCreateForm({
       formDataObj.append('hours', formData.hours);
       formDataObj.append('tags', JSON.stringify(formData.tags));
       formDataObj.append('note', formData.note);
-      formDataObj.append('recipient_id', formData.recipient_id);
+      // recipient_id は一時的にUIから撤去（DB/API側ではnullを許容）
+      formDataObj.append('recipient_id', '');
       formDataObj.append('detailed_evaluations', JSON.stringify(detailedEvaluations));
 
       const result = await createEntry(formDataObj);
@@ -181,7 +182,8 @@ export default function EntryCreateForm({
           />
         </div>
 
-        {/* Recipient - 時間を受け取った相手 */}
+        {/* Recipient - 時間を受け取った相手（一時的にUIから撤去） */}
+        {/*
         <div>
           <label htmlFor="recipient_id" className="block text-sm font-medium text-gray-700 mb-2">
             時間を受け取った相手（任意）
@@ -204,6 +206,7 @@ export default function EntryCreateForm({
             この時間を誰のために提供したかを選択できます
           </p>
         </div>
+        */}
 
         {/* Note */}
         <div>
@@ -225,7 +228,8 @@ export default function EntryCreateForm({
           </p>
         </div>
 
-        {/* 相手への詳細評価（任意） */}
+        {/* 相手への詳細評価（任意）- recipient_id がUIから撤去されたため一時的に無効化 */}
+        {/*
         {formData.recipient_id && (
           <DetailedEvaluationSection
             evaluationAxes={evaluationAxes}
@@ -233,6 +237,7 @@ export default function EntryCreateForm({
             onChange={setDetailedEvaluations}
           />
         )}
+        */}
 
         {/* Submit */}
         <div className="pt-6 flex gap-4">

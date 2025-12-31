@@ -4,6 +4,14 @@ import { useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import TagMultiSelect from '@/components/TagMultiSelect';
+
+// デフォルトタグ候補
+const DEFAULT_TAG_SUGGESTIONS = [
+  '業務効率化プロジェクト',
+  '時間銀行プロジェクト',
+  '自分発見塾',
+];
 
 export default function TaskCreatePage() {
   const router = useRouter();
@@ -14,7 +22,7 @@ export default function TaskCreatePage() {
   const [formData, setFormData] = useState({
     title: '',
     description: '',
-    tags: '',
+    tags: [] as string[],
     estimated_hours: '',
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -50,15 +58,10 @@ export default function TaskCreatePage() {
     }
 
     try {
-      const tagsArray = formData.tags
-        .split(',')
-        .map((t) => t.trim())
-        .filter((t) => t.length > 0);
-
       const { error: insertError } = await supabase.from('tasks').insert({
         title: formData.title,
         description: formData.description || '',
-        tags: tagsArray,
+        tags: formData.tags,
         estimated_hours: formData.estimated_hours ? parseFloat(formData.estimated_hours) : null,
         requester_id: userId,
         status: 'open',
@@ -188,23 +191,17 @@ export default function TaskCreatePage() {
 
             <div>
               <label
-                htmlFor="tags"
                 className="block text-sm font-medium text-gray-700 mb-2"
               >
-                希望タグ
+                希望タグ（複数選択可）
               </label>
-              <input
-                type="text"
-                id="tags"
-                name="tags"
-                value={formData.tags}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                placeholder="例: デザイン, UI/UX, フロントエンド"
+              <TagMultiSelect
+                selectedTags={formData.tags}
+                onChange={(tags) => setFormData((prev) => ({ ...prev, tags }))}
+                defaultSuggestions={DEFAULT_TAG_SUGGESTIONS}
+                placeholder="タグを入力してEnter"
+                maxTags={10}
               />
-              <p className="mt-1 text-sm text-gray-500">
-                カンマ区切りで複数のタグを入力できます
-              </p>
             </div>
 
             <div className="pt-6">

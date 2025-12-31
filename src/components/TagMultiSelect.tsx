@@ -7,6 +7,7 @@ type TagMultiSelectProps = {
   selectedTags: string[];
   onChange: (tags: string[]) => void;
   suggestions?: string[];
+  defaultSuggestions?: string[]; // デフォルト候補（常に表示）
   placeholder?: string;
   maxTags?: number;
 };
@@ -15,6 +16,7 @@ export default function TagMultiSelect({
   selectedTags,
   onChange,
   suggestions = [],
+  defaultSuggestions = [],
   placeholder = 'タグを入力...',
   maxTags = 10,
 }: TagMultiSelectProps) {
@@ -22,6 +24,11 @@ export default function TagMultiSelect({
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [filteredSuggestions, setFilteredSuggestions] = useState<string[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // デフォルト候補から未選択のものを抽出
+  const availableDefaultSuggestions = defaultSuggestions.filter(
+    (tag) => !selectedTags.includes(tag.toLowerCase())
+  );
 
   useEffect(() => {
     if (inputValue.length > 0) {
@@ -72,6 +79,26 @@ export default function TagMultiSelect({
 
   return (
     <div className="relative">
+      {/* デフォルト候補ボタン */}
+      {availableDefaultSuggestions.length > 0 && (
+        <div className="mb-3">
+          <p className="text-xs text-gray-600 mb-2">デフォルト候補（クリックで追加）:</p>
+          <div className="flex flex-wrap gap-2">
+            {availableDefaultSuggestions.map((tag) => (
+              <button
+                key={tag}
+                type="button"
+                onClick={() => addTag(tag)}
+                disabled={selectedTags.length >= maxTags}
+                className="px-3 py-1 bg-gray-100 hover:bg-blue-50 text-gray-700 hover:text-blue-700 text-sm rounded-md border border-gray-300 hover:border-blue-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                + {tag}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Selected tags chips */}
       {selectedTags.length > 0 && (
         <div className="flex flex-wrap gap-2 mb-2">
