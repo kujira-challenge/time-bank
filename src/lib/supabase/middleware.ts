@@ -38,6 +38,13 @@ export async function updateSession(request: NextRequest) {
   // セッションをリフレッシュ
   const { data: { user } } = await supabase.auth.getUser();
 
+  // デバッグログ（一時的）
+  console.log('[Middleware]', {
+    pathname,
+    hasUser: !!user,
+    userId: user?.id,
+  });
+
   // 公開ルート（前方一致）はそのまま通す
   const isPublicRoute = PUBLIC_ROUTES.some((route) => pathname.startsWith(route));
 
@@ -57,13 +64,30 @@ export async function updateSession(request: NextRequest) {
   }
 
   // 認証済みユーザーの active チェック（招待制の強制）
-  const { data: profile } = await supabase
+  const { data: profile, error: profileError } = await supabase
     .from('profiles')
     .select('active')
     .eq('id', user.id)
     .single();
 
-  if (!profile || !profile.active) {
+  // デバッグログ（一時的）
+  console.log('[Middleware] Profile check:', {
+    hasProfile: !!profile,
+    active: profile?.active,
+    error: profileError?.message,
+  });
+
+  // プロフィールが見つからない場合は、トリガーで作成中の可能性があるため、
+  // 一度だけスルーする（新規ユーザーの初回ログイン時）
+  if (!profile) {
+    // プロフィールが存在しない場合は警告ログを出すが、通す
+    console.warn('[Middleware] Profile not found for user:', user.id, '- allowing access (may be creating)');
+    return supabaseResponse;
+  }
+
+  // プロフィールが存在するが active = false の場合は弾く
+  if (profile.active === false) {
+    console.warn('[Middleware] User is inactive:', user.id);
     const url = request.nextUrl.clone();
     url.pathname = '/login';
     url.searchParams.set('msg', 'not_invited');

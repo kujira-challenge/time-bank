@@ -38,19 +38,29 @@ export default function LoginForm() {
     }
 
     try {
+      // 環境変数またはブラウザの origin を使用
+      const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || window.location.origin;
+      const callbackUrl = `${siteUrl}/auth/callback?next=${encodeURIComponent(redirectTo)}`;
+
+      // デバッグログ（一時的）
+      console.log('[Login] Sending OTP to:', email);
+      console.log('[Login] Callback URL:', callbackUrl);
+
       const { error } = await supabase.auth.signInWithOtp({
         email,
         options: {
-          emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(redirectTo)}`,
+          emailRedirectTo: callbackUrl,
         },
       });
 
       if (error) {
+        console.error('[Login] OTP error:', error.message);
         setMessage({
           type: 'error',
           text: 'このメールアドレスは招待されていません。管理者にお問い合わせください。',
         });
       } else {
+        console.log('[Login] OTP sent successfully');
         setEmailSent(true);
         setMessage({
           type: 'success',
@@ -58,8 +68,8 @@ export default function LoginForm() {
         });
       }
     } catch (error) {
+      console.error('[Login] Unexpected error:', error);
       setMessage({ type: 'error', text: '予期しないエラーが発生しました' });
-      console.error('Login error:', error);
     } finally {
       setIsSubmitting(false);
     }
