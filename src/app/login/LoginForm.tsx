@@ -1,17 +1,16 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import Link from 'next/link';
 
 export default function LoginForm() {
   const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [emailSent, setEmailSent] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const supabase = createClient();
-  const router = useRouter();
   const searchParams = useSearchParams();
   const redirectTo = searchParams.get('next') || '/';
 
@@ -38,29 +37,25 @@ export default function LoginForm() {
       return;
     }
 
-    if (!password || password.length < 6) {
-      setMessage({ type: 'error', text: 'パスワードは6文字以上で入力してください' });
-      setIsSubmitting(false);
-      return;
-    }
-
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
+      const { error } = await supabase.auth.signInWithOtp({
         email,
-        password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(redirectTo)}`,
+        },
       });
 
       if (error) {
         setMessage({
           type: 'error',
-          text: 'メールアドレスまたはパスワードが正しくありません。',
+          text: 'このメールアドレスは招待されていません。管理者にお問い合わせください。',
         });
-      } else if (data.user) {
-        // ログイン成功後、元々アクセスしようとしたページまたはホームにリダイレクト
-        // セキュリティのため、内部URLのみを許可
-        const safeRedirect = redirectTo.startsWith('/') ? redirectTo : '/';
-        router.push(safeRedirect);
-        router.refresh();
+      } else {
+        setEmailSent(true);
+        setMessage({
+          type: 'success',
+          text: 'ログインリンクを送信しました。メールをご確認ください。',
+        });
       }
     } catch (error) {
       setMessage({ type: 'error', text: '予期しないエラーが発生しました' });
@@ -76,9 +71,9 @@ export default function LoginForm() {
         <div className="mb-6">
           <div className="bg-blue-50 border border-blue-200 rounded-md p-4">
             <p className="text-sm text-blue-800">
-              <strong>招待制ログイン</strong>
+              <strong>招待制ログイン（Magic Link）</strong>
               <br />
-              招待されたメールアドレスとパスワードでログインしてください。
+              招待されたメールアドレスを入力すると、ログインリンクが送信されます。
             </p>
           </div>
         </div>
@@ -88,7 +83,7 @@ export default function LoginForm() {
             <p className="text-sm text-yellow-800">
               <strong>ご注意</strong>
               <br />
-              このシステムは招待制です。アカウントが作成されていない場合はログインできません。
+              このシステムは招待制です。招待されていないメールアドレスではログインできません。
             </p>
           </div>
         </div>
@@ -111,6 +106,20 @@ export default function LoginForm() {
           </div>
         )}
 
+        {emailSent && (
+          <div className="mb-6 p-4 rounded-md bg-indigo-50 border border-indigo-200">
+            <p className="text-sm text-indigo-800 mb-3">
+              <strong>📧 メールを確認してください</strong>
+            </p>
+            <ul className="text-xs text-indigo-700 space-y-1 list-disc list-inside">
+              <li>受信トレイに届いたログインリンクをクリックしてください</li>
+              <li>リンクの有効期限は1時間です</li>
+              <li>メールが届かない場合は、迷惑メールフォルダをご確認ください</li>
+              <li>それでも届かない場合は、管理者にお問い合わせください</li>
+            </ul>
+          </div>
+        )}
+
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
             <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
@@ -126,42 +135,38 @@ export default function LoginForm() {
               onChange={(e) => setEmail(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               placeholder="your.email@example.com"
-              disabled={isSubmitting}
-            />
-          </div>
-
-          <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
-              パスワード
-            </label>
-            <input
-              id="password"
-              name="password"
-              type="password"
-              autoComplete="current-password"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              placeholder="パスワードを入力"
-              disabled={isSubmitting}
+              disabled={isSubmitting || emailSent}
             />
           </div>
 
           <div>
             <button
               type="submit"
-              disabled={isSubmitting || !email || !password}
+              disabled={isSubmitting || !email || emailSent}
               className={`w-full py-3 px-4 rounded-md font-medium transition-colors ${
-                isSubmitting || !email || !password
+                isSubmitting || !email || emailSent
                   ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                   : 'bg-blue-600 text-white hover:bg-blue-700'
               }`}
             >
-              {isSubmitting ? 'ログイン中...' : 'ログイン'}
+              {isSubmitting ? '送信中...' : emailSent ? 'メール送信済み' : 'ログインリンクを送信'}
             </button>
           </div>
         </form>
+
+        {emailSent && (
+          <div className="mt-6">
+            <button
+              onClick={() => {
+                setEmailSent(false);
+                setMessage(null);
+              }}
+              className="text-sm text-blue-600 hover:text-blue-800"
+            >
+              → 別のメールアドレスで再送する
+            </button>
+          </div>
+        )}
 
         <div className="mt-6">
           <Link href="/" className="text-sm text-blue-600 hover:text-blue-800">

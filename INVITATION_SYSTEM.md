@@ -1,33 +1,42 @@
-# 招待制認証システム実装ドキュメント
+# 招待制認証システム実装ドキュメント（Magic Link 方式）
 
 ## 概要
 
-Time Bankアプリケーションは**招待制（Invitation-Only）**システムに変更されました。
+Time Bankアプリケーションは**招待制（Invitation-Only）+ Magic Link**システムです。
 自己サインアップは無効化され、管理者が招待したユーザーのみがログインできます。
+
+**認証方式**: Magic Link（OTP）
+**パスワード**: 不要（メールで受け取ったリンクをクリックするだけでログイン）
 
 ## 実装内容
 
-### 1. ログインページの変更 (`src/app/login/page.tsx`)
+### 1. ログインページの変更 (`src/app/login/LoginForm.tsx`)
 
 #### 変更点:
-- **メールドメイン制限のロジックを削除**
-  - `NEXT_PUBLIC_ALLOWED_EMAIL_DOMAINS` 環境変数の参照を廃止
-  - ドメインバリデーション関数を削除
+- **Magic Link（OTP）方式に統一**
+  - `signInWithPassword` → `signInWithOtp` に変更
+  - パスワード入力欄を削除
+  - メールアドレスのみで認証
+
+- **送信後の UI 改善**
+  - 「メールを確認してください」の明示
+  - 二重送信防止（`emailSent` フラグ）
+  - 「メールが届かない場合」のヘルプ表示
 
 - **エラーメッセージの統一**
   - 未招待メールでのログイン試行時: 「このメールアドレスは招待されていません。管理者にお問い合わせください。」
 
 - **UI文言の更新**
-  - 「招待制ログイン」と明記
-  - 招待されたメールアドレスのみ有効であることを強調
-  - 注意書きを追加（黄色の警告ボックス）
+  - 「招待制ログイン（Magic Link）」と明記
+  - リンク有効期限（1時間）の表示
+  - 迷惑メールフォルダの確認を促すガイド
 
 #### コード例:
 ```typescript
 const { error } = await supabase.auth.signInWithOtp({
   email,
   options: {
-    emailRedirectTo: `${window.location.origin}/auth/callback`,
+    emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(redirectTo)}`,
   },
 });
 
@@ -35,6 +44,12 @@ if (error) {
   setMessage({
     type: 'error',
     text: 'このメールアドレスは招待されていません。管理者にお問い合わせください。'
+  });
+} else {
+  setEmailSent(true);
+  setMessage({
+    type: 'success',
+    text: 'ログインリンクを送信しました。メールをご確認ください。',
   });
 }
 ```
@@ -182,19 +197,41 @@ SELECT * FROM pg_policies WHERE schemaname = 'public';
 1. Supabase ダッシュボードを開く
 2. 「Authentication」→「Providers」→「Email」を選択
 3. **「Enable sign ups」を OFF に設定**（重要）
-4. 保存
+4. 「Confirm email」を ON に設定（推奨）
+5. 保存
 
 #### 2. ユーザーの招待方法
 1. 「Authentication」→「Users」を開く
 2. 「Add user」ボタンをクリック
 3. ユーザーのメールアドレスを入力
-4. 「Send Magic Link」を選択（推奨）
+4. **「Send Magic Link」を選択**（パスワードは不要）
 5. ユーザーにマジックリンクが送信される
+6. ユーザーはメール内のリンクをクリックするだけでログイン完了
 
-#### 3. SMTP 設定（本番環境推奨）
+#### 3. 再招待（リンク再送）の方法
+
+**ユーザーから「メールが届かない」「リンクが期限切れ」と言われた場合:**
+
+##### 方法A: Supabase Dashboard から Magic Link を再送（推奨）
+1. Supabase ダッシュボードで「Authentication」→「Users」を開く
+2. 対象ユーザーを検索（メールアドレスで）
+3. ユーザー詳細画面で「Send Magic Link」をクリック
+4. 新しいログインリンクがメールで送信される
+5. ユーザーに再送した旨を連絡
+
+##### 方法B: ユーザー自身がログイン画面から再送
+1. ユーザーに `/login` ページにアクセスしてもらう
+2. メールアドレスを入力して「ログインリンクを送信」をクリック
+3. 招待済みのメールアドレスであれば、新しいリンクが送信される
+4. メールが届かない場合は、迷惑メールフォルダを確認してもらう
+
+**注意**: Magic Link の有効期限は1時間です。期限切れの場合は再送が必要です。
+
+#### 4. SMTP 設定（本番環境推奨）
 1. 「Project Settings」→「Auth」を開く
 2. 「SMTP Settings」を設定
 3. Gmail 宛のメール送信には必須
+4. 送信元メールアドレスを信頼できるドメインに設定（SPF/DKIM 推奨）
 
 ---
 
@@ -246,33 +283,91 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key_here
 2. 招待されていないメールアドレスを入力
 3. 「ログインリンクを送信」をクリック
 4. **期待結果**: 「このメールアドレスは招待されていません。管理者にお問い合わせください。」と表示される
+5. メールは送信されない
 
-### 2. 招待されたメールでのログイン
-1. Supabase ダッシュボードで「Add user」からユーザーを招待
-2. 招待メールに記載されたマジックリンクをクリック
-3. **期待結果**: ログイン成功、ダッシュボードにリダイレクト
+### 2. 招待されたメールでのログイン（初回）
+1. Supabase ダッシュボードで「Authentication」→「Users」→「Add user」
+2. ユーザーのメールアドレスを入力し、「Send Magic Link」を選択
+3. ユーザーのメールボックスに届いた招待メールを開く
+4. メール内の「Log In」ボタンまたはリンクをクリック
+5. **期待結果**: 自動的にログインされ、`/` または `/dashboard` にリダイレクト
+6. ナビゲーションバーに「マイページ」が表示される
 
-### 3. 未認証での保護ページアクセス
+### 3. Magic Link の再送テスト
+1. `/login` ページにアクセス
+2. 既に招待済みのメールアドレスを入力
+3. 「ログインリンクを送信」をクリック
+4. **期待結果**:
+   - 「ログインリンクを送信しました。メールをご確認ください。」と表示
+   - 入力欄が無効化され、「メール送信済み」ボタンに変わる
+   - 「メールを確認してください」のヘルプボックスが表示
+5. メールボックスに新しい Magic Link が届く
+6. リンクをクリックしてログイン成功
+
+### 4. 未認証での保護ページアクセス
 1. ブラウザのシークレットモード（または別のブラウザ）で `/dashboard` に直接アクセス
 2. **期待結果**: `/login?next=/dashboard` にリダイレクト
-3. ログイン後、元の `/dashboard` に戻る
+3. Magic Link でログイン後、元の `/dashboard` に戻る
 
-### 4. RLS の動作確認
+### 5. Magic Link の有効期限テスト
+1. `/login` でログインリンクを送信
+2. メールを開くが、**1時間以上待つ**
+3. リンクをクリック
+4. **期待結果**: 期限切れエラーが表示される
+5. `/login` で再度ログインリンクを送信してログイン成功
+
+### 6. RLS の動作確認
 1. ユーザーA でログイン
 2. エントリを作成
 3. ユーザーB でログイン
 4. **期待結果**: ユーザーA のエントリは閲覧可能だが、編集・削除は不可
 
+### 7. メールが届かない場合のヘルプ表示確認
+1. `/login` でログインリンクを送信
+2. **期待結果**: 以下のヘルプが表示される
+   - 受信トレイに届いたログインリンクをクリックしてください
+   - リンクの有効期限は1時間です
+   - メールが届かない場合は、迷惑メールフォルダをご確認ください
+   - それでも届かない場合は、管理者にお問い合わせください
+
 ---
 
 ## トラブルシューティング
+
+### 問題: Magic Link のメールが届かない
+
+**解決策**:
+1. 迷惑メールフォルダを確認
+2. Supabase ダッシュボードで「Authentication」→「Users」を確認
+   - ユーザーが存在するか確認
+   - 「Confirmed」状態になっているか確認
+3. SMTP 設定を確認（本番環境の場合）
+   - 「Project Settings」→「Auth」→「SMTP Settings」
+   - 送信元ドメインの SPF/DKIM 設定を確認
+4. Supabase のメール送信制限を確認
+   - 開発環境では1時間に3-4通の制限がある場合あり
+   - 本番環境では独自 SMTP 推奨
+
+### 問題: Magic Link をクリックしても「Invalid or expired link」エラー
+
+**解決策**:
+1. Magic Link の有効期限は1時間です。期限切れの場合は再送が必要
+2. `/login` で再度ログインリンクを送信
+3. Supabase ダッシュボードで「Send Magic Link」を実行
 
 ### 問題: 招待したのにログインできない
 
 **解決策**:
 1. Supabase ダッシュボードで「Authentication」→「Users」を確認
 2. ユーザーが「Confirmed」状態になっているか確認
-3. メールの迷惑メールフォルダを確認
+3. `profiles` テーブルで `active = true` になっているか確認:
+   ```sql
+   SELECT id, email, active FROM profiles WHERE email = 'user@example.com';
+   ```
+4. `active = false` の場合は以下で有効化:
+   ```sql
+   UPDATE profiles SET active = true WHERE email = 'user@example.com';
+   ```
 
 ### 問題: 未認証でも保護ページにアクセスできる
 
@@ -291,6 +386,13 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key_here
    ```
 3. 必要に応じて `schema.sql` を再実行
 
+### 問題: 「別のメールアドレスで再送する」ボタンが表示されない
+
+**解決策**:
+1. ページをリロード（F5）
+2. ブラウザキャッシュをクリア
+3. シークレットモードで `/login` にアクセス
+
 ---
 
 ## 参考リンク
@@ -305,4 +407,5 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key_here
 
 | 日付 | 変更内容 |
 |------|----------|
+| 2026-01-01 | Magic Link 方式に統一、UI 改善、再招待手順追加 |
 | 2025-10-23 | 招待制システムの初回実装完了 |

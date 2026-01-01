@@ -24,7 +24,7 @@
 |------|------|
 | アプリ名 | Time Bank |
 | 目的 | チーム・個人の「時間貢献記録」と「見える化」 |
-| 認証 | Supabase Auth（メールリンク方式） |
+| 認証 | Supabase Auth（Magic Link / 招待制） |
 | データベース | Supabase PostgreSQL |
 | デプロイ | Vercel（mainブランチ連携） |
 | ストレージ | Supabase（将来的にCSVや添付の保存も予定） |
@@ -160,11 +160,15 @@ src/
 
 ## 🧪 動作確認手順
 
-1. `/login` にアクセス → Supabaseメール認証でログイン  
-2. `/entries/create` で新規エントリを登録  
-3. `/entries` で自分の登録が表示される  
-4. `/dashboard` で時間集計が見える  
-5. `/settings/users` で他メンバーの一覧を確認  
+1. `/login` にアクセス → メールアドレスを入力して Magic Link を受信
+2. メールのリンクをクリックしてログイン
+3. `/entries/create` で新規エントリを登録
+4. `/entries` で自分の登録が表示される
+5. `/dashboard` で時間集計が見える
+6. `/settings/users` で他メンバーの一覧を確認
+
+**初回ログイン**: 管理者が Supabase Dashboard から招待する必要があります。
+詳細は [`INVITATION_SYSTEM.md`](./INVITATION_SYSTEM.md) を参照してください。  
 
 ---
 
