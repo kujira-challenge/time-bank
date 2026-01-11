@@ -10,6 +10,24 @@ Time Bankアプリケーションは**招待制（Invitation-Only）+ パスワ�
 
 ## 実装内容
 
+### 重要: パスワードリセットフローの仕組み
+
+パスワードリセットは **必ず `/auth/callback` を経由** します。これにより Supabase のセッションが正しく確立されます。
+
+**正しいフロー:**
+1. ユーザーが `/forgot-password` でメールアドレスを入力
+2. パスワードリセットメールが送信される（リンク先: `/auth/callback?next=/reset-password`）
+3. メールのリンクをクリック → `/auth/callback` に遷移
+4. `/auth/callback` で `exchangeCodeForSession(code)` を実行してセッション確立
+5. `/reset-password` に自動リダイレクト
+6. ユーザーが新しいパスワードを設定
+7. `/login` ページへリダイレクト
+
+**なぜ `/auth/callback` を経由するのか:**
+- `/reset-password` に直接リダイレクトすると、セッションが確立されない
+- Supabase のパスワードリセットリンクには `code` パラメータが含まれる
+- この `code` を `exchangeCodeForSession()` で交換することでセッションが確立される
+
 ### 1. ログインページの変更 (`src/app/login/LoginForm.tsx`)
 
 #### 変更点:
@@ -50,9 +68,66 @@ if (error) {
 }
 ```
 
+### 2. パスワードリセット機能 (`src/app/forgot-password/page.tsx`)
+
+#### 重要な実装ポイント:
+- `redirectTo` は **必ず `/auth/callback?next=/reset-password`** に設定
+- 直接 `/reset-password` にリダイレクトしてはいけない
+
+#### コード例:
+```typescript
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || window.location.origin;
+const redirectUrl = `${siteUrl}/auth/callback?next=/reset-password`;
+
+const { error } = await supabase.auth.resetPasswordForEmail(email, {
+  redirectTo: redirectUrl,
+});
+```
+
+**よくある間違い（NG）:**
+```typescript
+// ❌ これだとセッションが確立されない
+const redirectUrl = `${siteUrl}/reset-password`;
+```
+
+### 3. パスワード設定ページ (`src/app/reset-password/page.tsx`)
+
+#### 実装内容:
+- `getSession()` でセッションの有効性を確認
+- セッションがあれば `updateUser({ password })` でパスワード更新
+- セッションがない場合はエラーメッセージを表示
+
+#### コード例:
+```typescript
+useEffect(() => {
+  const checkSession = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session) {
+      setIsValidSession(true);
+    } else {
+      setMessage({
+        type: 'error',
+        text: 'セッションが無効です。パスワードリセットメールのリンクから再度アクセスしてください。',
+      });
+    }
+  };
+  checkSession();
+}, [supabase.auth]);
+
+const handleSubmit = async (e: React.FormEvent) => {
+  const { error } = await supabase.auth.updateUser({
+    password: password,
+  });
+
+  if (!error) {
+    router.push('/login');
+  }
+};
+```
+
 ---
 
-### 2. 認証ミドルウェアの強化 (`src/lib/supabase/middleware.ts`)
+### 4. 認証ミドルウェアの強化 (`src/lib/supabase/middleware.ts`)
 
 #### 機能:
 - **公開ルートの定義**: `/`, `/login`, `/auth/callback`
@@ -189,7 +264,16 @@ SELECT * FROM pg_policies WHERE schemaname = 'public';
 
 ### 必須設定:
 
-#### 1. 自己サインアップの無効化
+#### 1. Redirect URLs の設定（重要）
+1. Supabase ダッシュボードを開く
+2. 「Authentication」→「URL Configuration」を開く
+3. **Redirect URLs** に以下を追加:
+   - 本番環境: `https://あなたの本番URL/auth/callback`
+   - 開発環境: `http://localhost:3000/auth/callback`
+
+**重要:** `/reset-password` を直接追加してはいけません。必ず `/auth/callback` を追加してください。
+
+#### 2. 自己サインアップの無効化
 1. Supabase ダッシュボードを開く
 2. 「Authentication」→「Providers」→「Email」を選択
 3. **「Enable Email provider」を ON に設定**
@@ -197,7 +281,7 @@ SELECT * FROM pg_policies WHERE schemaname = 'public';
 5. **「Allow new users to sign up」を OFF に設定**（重要）
 6. 保存
 
-#### 2. ユーザーの招待方法
+#### 3. ユーザーの招待方法
 1. 「Authentication」→「Users」を開く
 2. 「Add user」ボタンをクリック
 3. ユーザーのメールアドレスを入力
@@ -205,7 +289,7 @@ SELECT * FROM pg_policies WHERE schemaname = 'public';
 5. 「Create user」をクリック
 6. ユーザーが作成されたら、**必ずパスワードリセットメールを送信**してユーザーに通知
 
-#### 3. 初回ログイン時の対応
+#### 4. 初回ログイン時の対応
 
 **ユーザーの初回ログイン手順:**
 1. 管理者から招待されたことを確認
@@ -215,7 +299,7 @@ SELECT * FROM pg_policies WHERE schemaname = 'public';
 5. 新しいパスワードを設定
 6. `/login` ページでメールアドレスとパスワードでログイン
 
-#### 4. パスワード忘れ時の対応
+#### 5. パスワード忘れ時の対応
 
 **ユーザーから「パスワードを忘れた」と言われた場合:**
 1. ユーザーに `/forgot-password` ページにアクセスしてもらう
@@ -223,7 +307,7 @@ SELECT * FROM pg_policies WHERE schemaname = 'public';
 3. パスワードリセットメールが送信される
 4. メールのリンクから新しいパスワードを設定
 
-#### 5. SMTP 設定（本番環境推奨）
+#### 6. SMTP 設定（本番環境推奨）
 1. 「Project Settings」→「Auth」を開く
 2. 「SMTP Settings」を設定
 3. Gmail 宛のメール送信には必須

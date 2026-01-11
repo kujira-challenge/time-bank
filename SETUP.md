@@ -51,6 +51,15 @@ npm install
 
 **重要**: このシステムは招待制です。自己サインアップを無効化してください。
 
+#### Redirect URLs の設定
+1. Supabaseダッシュボードで「Authentication」→「URL Configuration」を開く
+2. **Redirect URLs** に以下を追加:
+   - 本番環境: `https://あなたの本番URL/auth/callback`
+   - 開発環境: `http://localhost:3000/auth/callback`
+
+**重要:** `/reset-password` を直接追加してはいけません。必ず `/auth/callback` を追加してください。
+
+#### Email Provider の設定
 1. Supabaseダッシュボードで「Authentication」→「Providers」を開く
 2. 「Email」を有効化
 3. **「Enable Email provider」を ON に設定**
@@ -112,16 +121,23 @@ npm run dev
 
 ### 6.2 招待されたユーザーの初回ログイン
 
+**正しいフロー:**
 1. `/forgot-password` ページにアクセス
 2. **招待されたメールアドレス**を入力
 3. 「リセットメールを送信」をクリック
 4. メールボックスに届いたパスワードリセットメールを開く
-5. メールのリンクから `/reset-password` ページにアクセス
-6. 新しいパスワード（6文字以上）を設定
-7. `/login` ページでメールアドレスとパスワードでログイン
-8. 自動的にログインされ、プロフィールが作成されます
+5. メールのリンクをクリック
+   - リンク先: `/auth/callback?next=/reset-password`
+   - `/auth/callback` で自動的にセッションが確立される
+   - `/reset-password` に自動リダイレクト
+6. `/reset-password` ページで新しいパスワード（6文字以上）を設定
+7. `/login` ページに自動リダイレクト
+8. メールアドレスとパスワードでログイン
+9. プロフィールが作成され、ログイン完了
 
-**注意**:
+**重要:**
+- パスワードリセットは **必ず `/auth/callback` を経由** します
+- これにより Supabase のセッションが正しく確立されます
 - 招待されていないメールアドレスではログインできません
 - パスワードリセットリンクの有効期限は1時間です
 - パスワードは6文字以上で設定してください
