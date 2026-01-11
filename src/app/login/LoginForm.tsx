@@ -1,18 +1,19 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import Link from 'next/link';
 
 export default function LoginForm() {
   const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [emailSent, setEmailSent] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const supabase = createClient();
   const searchParams = useSearchParams();
-  const redirectTo = searchParams.get('next') || '/';
+  const router = useRouter();
+  const redirectTo = searchParams.get('next') || '/dashboard';
 
   // URLパラメータからエラーメッセージを取得
   useEffect(() => {
@@ -37,35 +38,39 @@ export default function LoginForm() {
       return;
     }
 
+    if (!password) {
+      setMessage({ type: 'error', text: 'パスワードを入力してください' });
+      setIsSubmitting(false);
+      return;
+    }
+
     try {
-      // 環境変数またはブラウザの origin を使用
-      const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || window.location.origin;
-      const callbackUrl = `${siteUrl}/auth/callback?next=${encodeURIComponent(redirectTo)}`;
-
-      // デバッグログ（一時的）
-      console.log('[Login] Sending OTP to:', email);
-      console.log('[Login] Callback URL:', callbackUrl);
-
-      const { error } = await supabase.auth.signInWithOtp({
+      const { error } = await supabase.auth.signInWithPassword({
         email,
-        options: {
-          emailRedirectTo: callbackUrl,
-        },
+        password,
       });
 
       if (error) {
-        console.error('[Login] OTP error:', error.message);
-        setMessage({
-          type: 'error',
-          text: 'このメールアドレスは招待されていません。管理者にお問い合わせください。',
-        });
+        // エラータイプに応じてメッセージを変更
+        if (error.message.includes('Invalid login credentials')) {
+          setMessage({
+            type: 'error',
+            text: 'メールアドレスまたはパスワードが正しくありません。',
+          });
+        } else if (error.message.includes('Email not confirmed')) {
+          setMessage({
+            type: 'error',
+            text: 'このメールアドレスは招待されていません。管理者にお問い合わせください。',
+          });
+        } else {
+          setMessage({
+            type: 'error',
+            text: 'ログインに失敗しました。メールアドレスとパスワードを確認してください。',
+          });
+        }
       } else {
-        console.log('[Login] OTP sent successfully');
-        setEmailSent(true);
-        setMessage({
-          type: 'success',
-          text: 'ログインリンクを送信しました。メールをご確認ください。',
-        });
+        // ログイン成功 - リダイレクト
+        router.push(redirectTo);
       }
     } catch (error) {
       console.error('[Login] Unexpected error:', error);
@@ -81,9 +86,9 @@ export default function LoginForm() {
         <div className="mb-6">
           <div className="bg-blue-50 border border-blue-200 rounded-md p-4">
             <p className="text-sm text-blue-800">
-              <strong>招待制ログイン（Magic Link）</strong>
+              <strong>招待制ログイン</strong>
               <br />
-              招待されたメールアドレスを入力すると、ログインリンクが送信されます。
+              招待されたメールアドレスとパスワードでログインしてください。
             </p>
           </div>
         </div>
@@ -116,20 +121,6 @@ export default function LoginForm() {
           </div>
         )}
 
-        {emailSent && (
-          <div className="mb-6 p-4 rounded-md bg-indigo-50 border border-indigo-200">
-            <p className="text-sm text-indigo-800 mb-3">
-              <strong>📧 メールを確認してください</strong>
-            </p>
-            <ul className="text-xs text-indigo-700 space-y-1 list-disc list-inside">
-              <li>受信トレイに届いたログインリンクをクリックしてください</li>
-              <li>リンクの有効期限は1時間です</li>
-              <li>メールが届かない場合は、迷惑メールフォルダをご確認ください</li>
-              <li>それでも届かない場合は、管理者にお問い合わせください</li>
-            </ul>
-          </div>
-        )}
-
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
             <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
@@ -145,38 +136,48 @@ export default function LoginForm() {
               onChange={(e) => setEmail(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               placeholder="your.email@example.com"
-              disabled={isSubmitting || emailSent}
+              disabled={isSubmitting}
+            />
+          </div>
+
+          <div>
+            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
+              パスワード
+            </label>
+            <input
+              id="password"
+              name="password"
+              type="password"
+              autoComplete="current-password"
+              required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              placeholder="パスワード"
+              disabled={isSubmitting}
             />
           </div>
 
           <div>
             <button
               type="submit"
-              disabled={isSubmitting || !email || emailSent}
+              disabled={isSubmitting || !email || !password}
               className={`w-full py-3 px-4 rounded-md font-medium transition-colors ${
-                isSubmitting || !email || emailSent
+                isSubmitting || !email || !password
                   ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                   : 'bg-blue-600 text-white hover:bg-blue-700'
               }`}
             >
-              {isSubmitting ? '送信中...' : emailSent ? 'メール送信済み' : 'ログインリンクを送信'}
+              {isSubmitting ? 'ログイン中...' : 'ログイン'}
             </button>
           </div>
         </form>
 
-        {emailSent && (
-          <div className="mt-6">
-            <button
-              onClick={() => {
-                setEmailSent(false);
-                setMessage(null);
-              }}
-              className="text-sm text-blue-600 hover:text-blue-800"
-            >
-              → 別のメールアドレスで再送する
-            </button>
-          </div>
-        )}
+        <div className="mt-6">
+          <Link href="/forgot-password" className="text-sm text-blue-600 hover:text-blue-800">
+            パスワードを忘れた方はこちら
+          </Link>
+        </div>
 
         <div className="mt-6">
           <Link href="/" className="text-sm text-blue-600 hover:text-blue-800">

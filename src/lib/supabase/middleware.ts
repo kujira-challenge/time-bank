@@ -2,7 +2,7 @@ import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 
 // 公開ルート（認証不要）
-const PUBLIC_ROUTES = ['/login', '/auth/callback'];
+const PUBLIC_ROUTES = ['/login', '/auth/callback', '/forgot-password', '/reset-password'];
 
 // 完全一致で公開するルート
 const PUBLIC_EXACT_ROUTES = ['/'];
