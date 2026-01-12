@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import TagMultiSelect from '@/components/TagMultiSelect';
 import { createEntry, updateEntry, getAllTags } from '../actions';
 import { formatDateISO } from '@/lib/validation/schemas';
+import { DEFAULT_TAGS } from '@/constants/tags';
 // import DetailedEvaluationSection from './DetailedEvaluationSection'; // 一時的に未使用
 import type { EvaluationAxis, EvaluationItem, EntryDB } from '@/types';
 
@@ -192,6 +193,7 @@ export default function EntryCreateForm({
             selectedTags={formData.tags}
             onChange={(tags) => setFormData((prev) => ({ ...prev, tags }))}
             suggestions={tagSuggestions}
+            defaultSuggestions={[...DEFAULT_TAGS]}
             placeholder="タグを入力してEnter"
             maxTags={10}
           />

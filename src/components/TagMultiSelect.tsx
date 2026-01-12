@@ -32,17 +32,23 @@ export default function TagMultiSelect({
 
   useEffect(() => {
     if (inputValue.length > 0) {
+      // Filter suggestions based on input
       const filtered = suggestions
         .filter(
           (tag) =>
             tag.toLowerCase().includes(inputValue.toLowerCase()) &&
             !selectedTags.includes(tag.toLowerCase())
         )
-        .slice(0, 5);
+        .slice(0, 10); // Show up to 10 suggestions
       setFilteredSuggestions(filtered);
       setShowSuggestions(filtered.length > 0);
     } else {
-      setShowSuggestions(false);
+      // Show all available suggestions when no input (on focus)
+      const allAvailable = suggestions
+        .filter((tag) => !selectedTags.includes(tag.toLowerCase()))
+        .slice(0, 10);
+      setFilteredSuggestions(allAvailable);
+      setShowSuggestions(false); // Will be shown on focus
     }
   }, [inputValue, suggestions, selectedTags]);
 
@@ -130,7 +136,8 @@ export default function TagMultiSelect({
           onChange={(e) => setInputValue(e.target.value)}
           onKeyDown={handleInputKeyDown}
           onFocus={() => {
-            if (inputValue && filteredSuggestions.length > 0) {
+            // Show suggestions on focus if available
+            if (filteredSuggestions.length > 0) {
               setShowSuggestions(true);
             }
           }}
