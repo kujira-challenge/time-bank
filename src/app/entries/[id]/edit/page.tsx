@@ -31,21 +31,6 @@ export default async function EntryEditPage({ params }: PageProps) {
     notFound();
   }
 
-  // ユーザーのプロフィールを取得して編集権限をチェック
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
-    .single();
-
-  const isAdmin = profile?.role === 'admin';
-  const isOwner = entry.contributor_id === user.id;
-
-  // 編集権限チェック（オーナーまたは管理者のみ）
-  if (!isAdmin && !isOwner) {
-    redirect('/entries');
-  }
-
   // 全ユーザー一覧を取得
   const { data: allUsers } = await supabase
     .from('profiles')

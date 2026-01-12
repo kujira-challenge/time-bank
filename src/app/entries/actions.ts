@@ -72,27 +72,14 @@ export async function createEntry(formData: FormData) {
 
 export async function updateEntry(entryId: string, formData: FormData) {
   try {
-    const { supabase, user } = await requireUser();
+    const { supabase } = await requireUser();
 
-    // Check if user is owner or admin
+    // Get existing entry for fallback contributor_id
     const { data: entry } = await supabase
       .from('entries')
       .select('contributor_id')
       .eq('id', entryId)
       .single();
-
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single();
-
-    const isAdmin = profile?.role === 'admin';
-    const isOwner = entry?.contributor_id === user.id;
-
-    if (!isAdmin && !isOwner) {
-      return { success: false, error: 'Unauthorized: Only the owner or admin can update this entry' };
-    }
 
     const contributorIdStr = formData.get('contributor_id') as string | null;
     const rawData = {
@@ -128,27 +115,7 @@ export async function updateEntry(entryId: string, formData: FormData) {
 
 export async function deleteEntry(entryId: string) {
   try {
-    const { supabase, user } = await requireUser();
-
-    // Check if user is admin or owner
-    const { data: entry } = await supabase
-      .from('entries')
-      .select('contributor_id')
-      .eq('id', entryId)
-      .single();
-
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single();
-
-    const isAdmin = profile?.role === 'admin';
-    const isOwner = entry?.contributor_id === user.id;
-
-    if (!isAdmin && !isOwner) {
-      return { success: false, error: 'Unauthorized' };
-    }
+    const { supabase } = await requireUser();
 
     const { error } = await supabase
       .from('entries')

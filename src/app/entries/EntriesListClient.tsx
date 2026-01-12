@@ -67,13 +67,7 @@ export default function EntriesListClient({
     return filtered;
   }, [entries, filterWeekStart, filterTag, filterContributorId, showOnlyMine, currentUserId]);
 
-  const handleDelete = async (id: string, contributorId: string) => {
-    // 自分のエントリのみ削除可能（RLS）
-    if (contributorId !== currentUserId) {
-      alert('自分のエントリのみ削除できます');
-      return;
-    }
-
+  const handleDelete = async (id: string) => {
     if (!confirm('このエントリを削除しますか?')) {
       return;
     }
@@ -116,7 +110,7 @@ export default function EntriesListClient({
         <div className="grid md:grid-cols-3 gap-4">
           <div>
             <label htmlFor="filterWeekStart" className="block text-sm font-medium text-gray-700 mb-2">
-              週開始日でフィルタ
+              日付でフィルタ
             </label>
             <select
               id="filterWeekStart"
@@ -192,7 +186,7 @@ export default function EntriesListClient({
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-2">
                     <span className="text-lg font-semibold text-gray-900">{entry.hours}時間</span>
-                    <span className="text-sm text-gray-500">週開始: {entry.week_start}</span>
+                    <span className="text-sm text-gray-500">日付: {entry.week_start}</span>
                     <span className="px-2 py-1 bg-purple-100 text-purple-800 text-xs rounded-full">
                       {entry.contributor.display_name}
                     </span>
@@ -220,22 +214,20 @@ export default function EntriesListClient({
                   </p>
                 </div>
 
-                {entry.contributor_id === currentUserId && (
-                  <div className="flex gap-2 ml-4">
-                    <Link
-                      href={`/entries/${entry.id}/edit`}
-                      className="px-3 py-1 text-sm text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded transition-colors"
-                    >
-                      編集
-                    </Link>
-                    <button
-                      onClick={() => handleDelete(entry.id, entry.contributor_id)}
-                      className="px-3 py-1 text-sm text-red-600 hover:text-red-800 hover:bg-red-50 rounded transition-colors"
-                    >
-                      削除
-                    </button>
-                  </div>
-                )}
+                <div className="flex gap-2 ml-4">
+                  <Link
+                    href={`/entries/${entry.id}/edit`}
+                    className="px-3 py-1 text-sm text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded transition-colors"
+                  >
+                    編集
+                  </Link>
+                  <button
+                    onClick={() => handleDelete(entry.id)}
+                    className="px-3 py-1 text-sm text-red-600 hover:text-red-800 hover:bg-red-50 rounded transition-colors"
+                  >
+                    削除
+                  </button>
+                </div>
               </div>
             </div>
           ))}

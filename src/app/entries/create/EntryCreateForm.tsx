@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import TagMultiSelect from '@/components/TagMultiSelect';
 import { createEntry, updateEntry, getAllTags } from '../actions';
-import { getMondayOfWeek, formatDateISO } from '@/lib/validation/schemas';
+import { formatDateISO } from '@/lib/validation/schemas';
 // import DetailedEvaluationSection from './DetailedEvaluationSection'; // 一時的に未使用
 import type { EvaluationAxis, EvaluationItem, EntryDB } from '@/types';
 
@@ -53,10 +53,10 @@ export default function EntryCreateForm({
       }
     });
 
-    // Set default to this Monday if creating new entry
+    // Set default to today if creating new entry
     if (mode === 'create' && !formData.week_start) {
-      const monday = getMondayOfWeek(new Date());
-      setFormData((prev) => ({ ...prev, week_start: formatDateISO(monday) }));
+      const today = formatDateISO(new Date());
+      setFormData((prev) => ({ ...prev, week_start: today }));
     }
   }, [mode, formData.week_start]);
 
@@ -141,10 +141,10 @@ export default function EntryCreateForm({
           </p>
         </div>
 
-        {/* Week start */}
+        {/* Activity date */}
         <div>
           <label htmlFor="week_start" className="block text-sm font-medium text-gray-700 mb-2">
-            週開始日（月曜日） <span className="text-red-500">*</span>
+            活動日 <span className="text-red-500">*</span>
           </label>
           <input
             type="date"
@@ -152,16 +152,13 @@ export default function EntryCreateForm({
             name="week_start"
             value={formData.week_start}
             onChange={(e) => {
-              // Auto-adjust to Monday
-              const date = new Date(e.target.value + 'T00:00:00Z');
-              const monday = getMondayOfWeek(date);
-              setFormData((prev) => ({ ...prev, week_start: formatDateISO(monday) }));
+              setFormData((prev) => ({ ...prev, week_start: e.target.value }));
             }}
             required
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           />
           <p className="text-xs text-gray-500 mt-1">
-            月曜日以外を選択した場合、自動的に最も近い前の月曜日に補正されます
+            活動した具体的な日付を選択してください
           </p>
         </div>
 
