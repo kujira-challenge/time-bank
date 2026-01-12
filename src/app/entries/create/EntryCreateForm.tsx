@@ -4,10 +4,10 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import TagMultiSelect from '@/components/TagMultiSelect';
-import { createEntry, getAllTags } from '../actions';
+import { createEntry, updateEntry, getAllTags } from '../actions';
 import { getMondayOfWeek, formatDateISO } from '@/lib/validation/schemas';
 // import DetailedEvaluationSection from './DetailedEvaluationSection'; // 一時的に未使用
-import type { EvaluationAxis, EvaluationItem } from '@/types';
+import type { EvaluationAxis, EvaluationItem, EntryDB } from '@/types';
 
 type UserOption = {
   id: string;
@@ -15,24 +15,29 @@ type UserOption = {
 };
 
 type EntryCreateFormProps = {
-  displayName: string;
-  email: string;
-  allUsers: UserOption[]; // 一時的に未使用（recipient撤去のため）
-  evaluationAxes: EvaluationAxis[]; // 一時的に未使用（recipient撤去のため）
+  currentUserId: string;
+  allUsers: UserOption[];
+  evaluationAxes?: EvaluationAxis[]; // 一時的に未使用（recipient撤去のため）
+  mode?: 'create' | 'edit';
+  initialData?: Partial<EntryDB>;
+  entryId?: string;
 };
 
 export default function EntryCreateForm({
-  displayName,
-  email,
-  // allUsers,  // 一時的に未使用（recipient撤去のため）
+  currentUserId,
+  allUsers,
   // evaluationAxes, // 一時的に未使用（recipient撤去のため）
+  mode = 'create',
+  initialData,
+  entryId,
 }: EntryCreateFormProps) {
   const router = useRouter();
   const [formData, setFormData] = useState({
-    week_start: '',
-    hours: '',
-    tags: [] as string[],
-    note: '',
+    contributor_id: initialData?.contributor_id || currentUserId,
+    week_start: initialData?.week_start || '',
+    hours: initialData?.hours?.toString() || '',
+    tags: initialData?.tags || ([] as string[]),
+    note: initialData?.note || '',
     // recipient_id: '', // 一時的にUIから撤去（将来的に復活可能性あり）
   });
   const [detailedEvaluations] = useState<EvaluationItem[]>([]); // 一時的に未使用（recipient撤去のため）
@@ -48,10 +53,12 @@ export default function EntryCreateForm({
       }
     });
 
-    // Set default to this Monday
-    const monday = getMondayOfWeek(new Date());
-    setFormData((prev) => ({ ...prev, week_start: formatDateISO(monday) }));
-  }, []);
+    // Set default to this Monday if creating new entry
+    if (mode === 'create' && !formData.week_start) {
+      const monday = getMondayOfWeek(new Date());
+      setFormData((prev) => ({ ...prev, week_start: formatDateISO(monday) }));
+    }
+  }, [mode, formData.week_start]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -60,6 +67,7 @@ export default function EntryCreateForm({
 
     try {
       const formDataObj = new FormData();
+      formDataObj.append('contributor_id', formData.contributor_id);
       formDataObj.append('week_start', formData.week_start);
       formDataObj.append('hours', formData.hours);
       formDataObj.append('tags', JSON.stringify(formData.tags));
@@ -68,10 +76,12 @@ export default function EntryCreateForm({
       formDataObj.append('recipient_id', '');
       formDataObj.append('detailed_evaluations', JSON.stringify(detailedEvaluations));
 
-      const result = await createEntry(formDataObj);
+      const result = mode === 'create'
+        ? await createEntry(formDataObj)
+        : await updateEntry(entryId!, formDataObj);
 
       if (!result.success) {
-        setError(result.error || 'エントリの作成に失敗しました');
+        setError(result.error || `エントリの${mode === 'create' ? '作成' : '更新'}に失敗しました`);
         setIsSubmitting(false);
         return;
       }
@@ -79,8 +89,8 @@ export default function EntryCreateForm({
       router.push('/entries');
       router.refresh();
     } catch (err) {
-      setError('エントリの作成中に予期しないエラーが発生しました');
-      console.error('Entry creation error:', err);
+      setError(`エントリの${mode === 'create' ? '作成' : '更新'}中に予期しないエラーが発生しました`);
+      console.error('Entry operation error:', err);
       setIsSubmitting(false);
     }
   };
@@ -107,19 +117,27 @@ export default function EntryCreateForm({
       )}
 
       <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Contributor display */}
+        {/* Contributor selector */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label htmlFor="contributor_id" className="block text-sm font-medium text-gray-700 mb-2">
             貢献者 <span className="text-red-500">*</span>
           </label>
-          <div className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50">
-            <div className="flex items-center justify-between">
-              <span className="text-gray-900 font-medium">{displayName}</span>
-              <span className="text-sm text-gray-500">({email})</span>
-            </div>
-          </div>
+          <select
+            id="contributor_id"
+            name="contributor_id"
+            value={formData.contributor_id}
+            onChange={(e) => setFormData((prev) => ({ ...prev, contributor_id: e.target.value }))}
+            required
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          >
+            {allUsers.map((user) => (
+              <option key={user.id} value={user.id}>
+                {user.display_name} {user.id === currentUserId ? '(自分)' : ''}
+              </option>
+            ))}
+          </select>
           <p className="text-xs text-gray-500 mt-1">
-            自分のエントリのみ作成できます
+            自分または他の貢献者の名義でエントリを作成できます
           </p>
         </div>
 
@@ -250,7 +268,7 @@ export default function EntryCreateForm({
                 : 'bg-blue-600 text-white hover:bg-blue-700'
             }`}
           >
-            {isSubmitting ? '作成中...' : '作成'}
+            {isSubmitting ? `${mode === 'create' ? '作成' : '更新'}中...` : mode === 'create' ? '作成' : '更新'}
           </button>
 
           <Link

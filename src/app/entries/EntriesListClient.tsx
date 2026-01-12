@@ -221,12 +221,20 @@ export default function EntriesListClient({
                 </div>
 
                 {entry.contributor_id === currentUserId && (
-                  <button
-                    onClick={() => handleDelete(entry.id, entry.contributor_id)}
-                    className="ml-4 px-3 py-1 text-sm text-red-600 hover:text-red-800 hover:bg-red-50 rounded transition-colors"
-                  >
-                    削除
-                  </button>
+                  <div className="flex gap-2 ml-4">
+                    <Link
+                      href={`/entries/${entry.id}/edit`}
+                      className="px-3 py-1 text-sm text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded transition-colors"
+                    >
+                      編集
+                    </Link>
+                    <button
+                      onClick={() => handleDelete(entry.id, entry.contributor_id)}
+                      className="px-3 py-1 text-sm text-red-600 hover:text-red-800 hover:bg-red-50 rounded transition-colors"
+                    >
+                      削除
+                    </button>
+                  </div>
                 )}
               </div>
             </div>

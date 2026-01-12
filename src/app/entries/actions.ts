@@ -10,12 +10,13 @@ export async function createEntry(formData: FormData) {
     const { supabase, user } = await requireUser();
 
     const recipientIdStr = formData.get('recipient_id') as string | null;
+    const contributorIdStr = formData.get('contributor_id') as string | null;
     const rawData = {
       week_start: formData.get('week_start') as string,
       hours: parseFloat(formData.get('hours') as string),
       tags: JSON.parse(formData.get('tags') as string),
       note: formData.get('note') as string,
-      contributor_id: user.id,
+      contributor_id: contributorIdStr && contributorIdStr !== '' ? contributorIdStr : user.id,
       recipient_id: recipientIdStr && recipientIdStr !== '' ? recipientIdStr : null,
     };
 
@@ -73,22 +74,33 @@ export async function updateEntry(entryId: string, formData: FormData) {
   try {
     const { supabase, user } = await requireUser();
 
-    // Check if user is admin
+    // Check if user is owner or admin
+    const { data: entry } = await supabase
+      .from('entries')
+      .select('contributor_id')
+      .eq('id', entryId)
+      .single();
+
     const { data: profile } = await supabase
       .from('profiles')
       .select('role')
       .eq('id', user.id)
       .single();
 
-    if (!profile || profile.role !== 'admin') {
-      return { success: false, error: 'Unauthorized: Admin role required' };
+    const isAdmin = profile?.role === 'admin';
+    const isOwner = entry?.contributor_id === user.id;
+
+    if (!isAdmin && !isOwner) {
+      return { success: false, error: 'Unauthorized: Only the owner or admin can update this entry' };
     }
 
+    const contributorIdStr = formData.get('contributor_id') as string | null;
     const rawData = {
       week_start: formData.get('week_start') as string,
       hours: parseFloat(formData.get('hours') as string),
       tags: JSON.parse(formData.get('tags') as string),
       note: formData.get('note') as string,
+      contributor_id: contributorIdStr && contributorIdStr !== '' ? contributorIdStr : entry?.contributor_id,
     };
 
     // Validate with Zod
