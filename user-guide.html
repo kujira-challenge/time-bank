@@ -1,0 +1,918 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Time Bank - 完全ユーザーガイド</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.7;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 3em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        header p {
+            font-size: 1.2em;
+            opacity: 0.95;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        nav {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 8px;
+            margin-bottom: 40px;
+            border-left: 4px solid #667eea;
+        }
+
+        nav h2 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+
+        nav ul {
+            list-style: none;
+        }
+
+        nav ul li {
+            margin: 10px 0;
+        }
+
+        nav ul li a {
+            color: #555;
+            text-decoration: none;
+            transition: color 0.3s;
+            display: block;
+            padding: 5px 10px;
+            border-radius: 4px;
+        }
+
+        nav ul li a:hover {
+            color: #667eea;
+            background: #e7e9fc;
+        }
+
+        section {
+            margin-bottom: 50px;
+            scroll-margin-top: 20px;
+        }
+
+        h2 {
+            color: #667eea;
+            font-size: 2em;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #667eea;
+        }
+
+        h3 {
+            color: #764ba2;
+            font-size: 1.5em;
+            margin: 25px 0 15px 0;
+        }
+
+        h4 {
+            color: #555;
+            font-size: 1.2em;
+            margin: 20px 0 10px 0;
+        }
+
+        p {
+            margin-bottom: 15px;
+            color: #555;
+        }
+
+        ul, ol {
+            margin: 15px 0 15px 30px;
+            color: #555;
+        }
+
+        ul li, ol li {
+            margin: 8px 0;
+        }
+
+        .feature-box {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #667eea;
+        }
+
+        .feature-box h4 {
+            color: #667eea;
+            margin-top: 0;
+        }
+
+        .warning-box {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            border-left: 4px solid #ffc107;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+
+        .warning-box h4 {
+            color: #856404;
+            margin-top: 0;
+        }
+
+        .info-box {
+            background: #d1ecf1;
+            border: 1px solid #17a2b8;
+            border-left: 4px solid #17a2b8;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+
+        .info-box h4 {
+            color: #0c5460;
+            margin-top: 0;
+        }
+
+        .success-box {
+            background: #d4edda;
+            border: 1px solid #28a745;
+            border-left: 4px solid #28a745;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+
+        .success-box h4 {
+            color: #155724;
+            margin-top: 0;
+        }
+
+        .step-number {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            width: 30px;
+            height: 30px;
+            line-height: 30px;
+            text-align: center;
+            border-radius: 50%;
+            margin-right: 10px;
+            font-weight: bold;
+        }
+
+        .highlight {
+            background: #fffacd;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-weight: 600;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        table th {
+            background: #667eea;
+            color: white;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        table td {
+            padding: 12px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        table tr:hover {
+            background: #f8f9fa;
+        }
+
+        code {
+            background: #f4f4f4;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.85em;
+            font-weight: 600;
+            margin-right: 5px;
+        }
+
+        .badge-important {
+            background: #dc3545;
+            color: white;
+        }
+
+        footer {
+            background: #f8f9fa;
+            padding: 30px;
+            text-align: center;
+            color: #666;
+            border-top: 1px solid #ddd;
+        }
+
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+
+            .container {
+                box-shadow: none;
+            }
+
+            header {
+                print-color-adjust: exact;
+                -webkit-print-color-adjust: exact;
+            }
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+
+            .content {
+                padding: 20px;
+            }
+
+            header h1 {
+                font-size: 2em;
+            }
+
+            h2 {
+                font-size: 1.5em;
+            }
+
+            h3 {
+                font-size: 1.3em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🕒 Time Bank</h1>
+            <p>チーム時間貢献記録システム - 完全ユーザーガイド</p>
+        </header>
+
+        <div class="content">
+            <!-- 目次 -->
+            <nav>
+                <h2>📑 目次</h2>
+                <ul>
+                    <li><a href="#introduction">1. Time Bankとは</a></li>
+                    <li><a href="#getting-started">2. はじめに - ログインと初期設定</a></li>
+                    <li><a href="#main-features">3. 主要機能</a>
+                        <ul style="margin-left: 20px;">
+                            <li><a href="#entries">3.1 エントリ作成・管理</a></li>
+                            <li><a href="#dashboard">3.2 ダッシュボード</a></li>
+                            <li><a href="#tasks">3.3 タスク管理</a></li>
+                            <li><a href="#users">3.4 ユーザー管理</a></li>
+                            <li><a href="#mypage">3.5 マイページ</a></li>
+                        </ul>
+                    </li>
+                    <li><a href="#tips">4. 活用のヒント</a></li>
+                    <li><a href="#faq">5. よくある質問</a></li>
+                    <li><a href="#troubleshooting">6. トラブルシューティング</a></li>
+                </ul>
+            </nav>
+
+            <!-- 1. Time Bankとは -->
+            <section id="introduction">
+                <h2>1. Time Bankとは</h2>
+
+                <p>
+                    Time Bankは、チームメンバーの<span class="highlight">時間貢献を記録・可視化</span>するための総合的な管理システムです。
+                    個人やチームの作業時間を「時間銀行」として記録し、分析することで、プロジェクトの進捗管理や
+                    メンバーの貢献度を明確にすることができます。
+                </p>
+
+                <div class="feature-box">
+                    <h4>🎯 Time Bankの目的</h4>
+                    <ul>
+                        <li><strong>透明性の確保</strong>: チーム全員の時間貢献を可視化</li>
+                        <li><strong>公平な評価</strong>: 客観的なデータに基づく貢献度の把握</li>
+                        <li><strong>プロジェクト管理</strong>: タグやタスクによる作業分類と分析</li>
+                        <li><strong>チーム協働</strong>: Wiki的な相互編集による柔軟な記録管理</li>
+                    </ul>
+                </div>
+
+                <h3>主な特徴</h3>
+                <table>
+                    <tr>
+                        <th>特徴</th>
+                        <th>説明</th>
+                    </tr>
+                    <tr>
+                        <td><strong>シンプルな時間記録</strong></td>
+                        <td>直感的なUIで簡単に作業時間を記録</td>
+                    </tr>
+                    <tr>
+                        <td><strong>リアルタイム集計</strong></td>
+                        <td>ダッシュボードで即座に時間データを分析</td>
+                    </tr>
+                    <tr>
+                        <td><strong>タグによる分類</strong></td>
+                        <td>プロジェクトや作業内容でエントリを分類</td>
+                    </tr>
+                    <tr>
+                        <td><strong>代理入力機能</strong></td>
+                        <td>他のメンバーの代わりにエントリを作成可能</td>
+                    </tr>
+                    <tr>
+                        <td><strong>相互編集</strong></td>
+                        <td>全員がすべてのエントリを編集・修正可能（Wiki方式）</td>
+                    </tr>
+                    <tr>
+                        <td><strong>CSVエクスポート</strong></td>
+                        <td>データをExcelなどで詳細分析</td>
+                    </tr>
+                </table>
+            </section>
+
+            <!-- 2. はじめに -->
+            <section id="getting-started">
+                <h2>2. はじめに - ログインと初期設定</h2>
+
+                <h3><span class="step-number">1</span>アカウントについて</h3>
+
+                <div class="info-box">
+                    <h4>💡 招待制システム</h4>
+                    <p>
+                        Time Bankは<strong>招待制</strong>のため、管理者があらかじめアカウントを作成する必要があります。
+                        アカウントが必要な場合は、管理者にご連絡ください。
+                    </p>
+                </div>
+
+                <h3><span class="step-number">2</span>初回ログイン</h3>
+                <ol>
+                    <li>管理者から提供されたURLにアクセス</li>
+                    <li>「ログイン」ボタンをクリック</li>
+                    <li>メールアドレスを入力</li>
+                    <li>初回の場合は「パスワードを忘れた場合」からパスワードリセットを実行</li>
+                    <li>メールで届いたリンクから新しいパスワードを設定</li>
+                    <li>設定したパスワードでログイン</li>
+                </ol>
+
+                <div class="warning-box">
+                    <h4>⚠️ パスワードの管理</h4>
+                    <p>パスワードは安全な場所に保管してください。忘れた場合は「パスワードを忘れた場合」からリセットできます。</p>
+                </div>
+
+                <h3><span class="step-number">3</span>ログイン後の画面</h3>
+                <p>
+                    ログインに成功すると、ホーム画面が表示されます。ホーム画面には以下のメニューが表示されます：
+                </p>
+
+                <div class="feature-box">
+                    <h4>🏠 ホーム画面のメニュー</h4>
+                    <ul>
+                        <li><strong>エントリ一覧</strong>: 記録した時間を確認・管理</li>
+                        <li><strong>エントリ作成</strong>: 新しい時間を記録</li>
+                        <li><strong>ダッシュボード</strong>: 時間の集計と分析</li>
+                        <li><strong>タスク依頼</strong>: タスクを依頼・管理</li>
+                        <li><strong>ユーザー管理</strong>: 貢献者を追加・管理</li>
+                        <li><strong>ヘルプ</strong>: 使い方ガイド</li>
+                        <li><strong>マイページ</strong>: 自分のプロフィール</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- 3. 主要機能 -->
+            <section id="main-features">
+                <h2>3. 主要機能</h2>
+
+                <!-- 3.1 エントリ作成・管理 -->
+                <section id="entries">
+                    <h3>3.1 エントリ作成・管理</h3>
+
+                    <p>
+                        Time Bankの中核機能です。作業時間をエントリとして記録し、チーム全体で共有できます。
+                    </p>
+
+                    <h4>エントリ作成の手順</h4>
+                    <ol>
+                        <li>ホーム画面またはナビゲーションから<strong>「エントリ作成」</strong>をクリック</li>
+                        <li>以下の情報を入力：
+                            <div class="feature-box" style="margin-top: 10px;">
+                                <ul>
+                                    <li><strong>貢献者</strong>:
+                                        エントリを記録する対象者を選択。自分または他のメンバーを選択可能（代理入力機能）
+                                    </li>
+                                    <li><strong>活動日</strong> <span class="badge badge-important">必須</span>:
+                                        作業を行った具体的な日付を選択
+                                    </li>
+                                    <li><strong>時間数</strong> <span class="badge badge-important">必須</span>:
+                                        作業した時間を入力（0.5時間単位、0〜100時間）
+                                    </li>
+                                    <li><strong>タグ</strong>:
+                                        作業内容を分類するタグを追加（複数選択可、最大10個）<br>
+                                        よく使うタグがボタンで表示され、クリックで簡単に追加できます：
+                                        <ul style="margin-top: 5px;">
+                                            <li>業務効率化プロジェクト</li>
+                                            <li>時間銀行プロジェクト</li>
+                                            <li>自分発見塾</li>
+                                        </ul>
+                                    </li>
+                                    <li><strong>メモ</strong>:
+                                        作業内容の詳細や特記事項（最大1000文字）
+                                    </li>
+                                </ul>
+                            </div>
+                        </li>
+                        <li>「作成」ボタンをクリック</li>
+                    </ol>
+
+                    <div class="success-box">
+                        <h4>✨ タグ入力の便利機能</h4>
+                        <ul>
+                            <li><strong>デフォルトタグ</strong>: よく使うタグがボタンで表示され、クリックするだけで追加可能</li>
+                            <li><strong>オートコンプリート</strong>: 過去に使用したタグが自動的に候補として表示</li>
+                            <li><strong>カスタムタグ</strong>: 新しいタグを自由に入力して追加可能</li>
+                        </ul>
+                    </div>
+
+                    <h4>エントリ一覧の使い方</h4>
+                    <p>
+                        「エントリ一覧」画面では、記録されたすべてのエントリを確認・管理できます。
+                    </p>
+
+                    <div class="feature-box">
+                        <h4>📋 フィルタリング機能</h4>
+                        <ul>
+                            <li><strong>週開始日でフィルタ</strong>: 特定の週のエントリのみ表示</li>
+                            <li><strong>タグでフィルタ</strong>: 特定のタグが付いたエントリのみ表示</li>
+                            <li><strong>貢献者でフィルタ</strong>: 特定のメンバーのエントリのみ表示</li>
+                            <li><strong>自分のエントリのみ表示</strong>: 自分が作成したエントリに絞り込み</li>
+                        </ul>
+                    </div>
+
+                    <h4>エントリの編集と削除</h4>
+                    <div class="success-box">
+                        <h4>🤝 相互編集機能</h4>
+                        <p>
+                            全員がすべてのエントリを編集・削除できます（Wiki方式）。
+                            これにより、チームメンバー同士で協力して記録の精度を高めることができます。
+                        </p>
+                        <ul>
+                            <li>各エントリの「編集」ボタンから内容を修正可能</li>
+                            <li>「削除」ボタンで不要なエントリを削除可能</li>
+                            <li>信頼できるチーム環境を前提とした設計</li>
+                        </ul>
+                    </div>
+
+                    <h4>代理入力機能の活用</h4>
+                    <div class="info-box">
+                        <h4>👥 代理入力とは</h4>
+                        <p>
+                            代理入力機能により、他のメンバーの代わりにエントリを作成できます。
+                            例えば、ミーティングや会議の記録係が、参加者全員分の時間を一括で記録する際に便利です。
+                        </p>
+                        <p><strong>使用例：</strong></p>
+                        <ul>
+                            <li>会議の参加者全員の時間を幹事が一括記録</li>
+                            <li>体調不良などで記録できないメンバーの代わりに入力</li>
+                            <li>チームメンバーではないが時間記録が必要なユーザーの代理入力</li>
+                        </ul>
+                    </div>
+
+                    <div class="info-box">
+                        <h4>💡 ログインしないユーザーについて</h4>
+                        <p>
+                            一部のユーザーは、チームメンバーではないものの、貢献時間の記録のために登録されている場合があります。
+                            そのようなユーザーはログインできないため、他のメンバーが代理入力で記録を行います。
+                        </p>
+                        <p>
+                            このようなユーザーの追加が必要な場合は、管理者にご連絡ください。
+                        </p>
+                    </div>
+                </section>
+
+                <!-- 3.2 ダッシュボード -->
+                <section id="dashboard">
+                    <h3>3.2 ダッシュボード</h3>
+
+                    <p>
+                        ダッシュボードでは、記録された時間データを集計・分析し、グラフや表で可視化します。
+                    </p>
+
+                    <h4>表示される情報</h4>
+
+                    <div class="feature-box">
+                        <h4>📊 サマリー統計</h4>
+                        <ul>
+                            <li><strong>総記録時間</strong>: チーム全体の累計作業時間</li>
+                            <li><strong>平均評価</strong>: フィードバック評価の平均値</li>
+                            <li><strong>評価件数</strong>: 受け取った評価の総数</li>
+                            <li><strong>価値スコア</strong>: 時間と評価を組み合わせた総合指標<br>
+                                <small>計算式: 時間 × 1.0 + 評価 × 2.0</small>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <h4>週次推移グラフ</h4>
+                    <p>
+                        過去12週間の時間推移を折れ線グラフで表示。チームの活動状況の変化を一目で確認できます。
+                    </p>
+
+                    <h4>タグ別時間分布</h4>
+                    <p>
+                        各タグ（プロジェクト）ごとの時間配分を円グラフまたは棒グラフで表示。
+                        どのプロジェクトに多くの時間が使われているかを把握できます。
+                    </p>
+
+                    <h4>チームランキング</h4>
+                    <p>
+                        メンバー別の時間数と価値スコアをランキング形式で表示。
+                        公平な評価とモチベーション向上に役立ちます。
+                    </p>
+
+                    <h4>CSVエクスポート機能</h4>
+                    <div class="success-box">
+                        <h4>📥 当月データのダウンロード</h4>
+                        <p>
+                            ダッシュボードの「当月CSVエクスポート」ボタンをクリックすると、
+                            当月のエントリデータをCSV形式でダウンロードできます。
+                        </p>
+                        <p><strong>活用方法：</strong></p>
+                        <ul>
+                            <li>Excelで開いて詳細な分析</li>
+                            <li>月次報告書の作成</li>
+                            <li>外部ツールとの連携</li>
+                            <li>データのバックアップ</li>
+                        </ul>
+                    </div>
+                </section>
+
+                <!-- 3.3 タスク管理 -->
+                <section id="tasks">
+                    <h3>3.3 タスク管理</h3>
+
+                    <p>
+                        チームメンバー間でタスクを依頼・管理する機能です。
+                    </p>
+
+                    <h4>タスクの作成</h4>
+                    <ol>
+                        <li>「タスク依頼」ページから「タスク作成」をクリック</li>
+                        <li>タスクの詳細を入力：
+                            <ul>
+                                <li>タスク名</li>
+                                <li>説明</li>
+                                <li>担当者</li>
+                                <li>期限</li>
+                            </ul>
+                        </li>
+                        <li>「作成」ボタンをクリック</li>
+                    </ol>
+
+                    <h4>タスクの管理</h4>
+                    <p>
+                        タスク一覧では、以下の操作が可能です：
+                    </p>
+                    <ul>
+                        <li>タスクの進捗状況を確認</li>
+                        <li>タスクの詳細を表示</li>
+                        <li>フィードバックを確認</li>
+                        <li>タスクのステータスを更新</li>
+                    </ul>
+                </section>
+
+                <!-- 3.4 ユーザー管理 -->
+                <section id="users">
+                    <h3>3.4 ユーザー管理</h3>
+
+                    <p>
+                        チームメンバーの情報を確認・管理する機能です。
+                    </p>
+
+                    <h4>ユーザー一覧</h4>
+                    <p>
+                        登録されているすべてのユーザーが一覧表示されます。各ユーザーの情報には以下が含まれます：
+                    </p>
+                    <ul>
+                        <li>表示名</li>
+                        <li>メールアドレス</li>
+                        <li>ロール（member / admin）</li>
+                        <li>アクティブ状態</li>
+                    </ul>
+
+                    <div class="info-box">
+                        <h4>💡 新しいユーザーの追加</h4>
+                        <p>
+                            新しいメンバーやログインしないユーザーの追加は、管理者が行います。
+                            ユーザーの追加が必要な場合は、管理者にご連絡ください。
+                        </p>
+                    </div>
+                </section>
+
+                <!-- 3.5 マイページ -->
+                <section id="mypage">
+                    <h3>3.5 マイページ</h3>
+
+                    <p>
+                        自分のプロフィール情報を確認・編集できます。
+                    </p>
+
+                    <h4>表示される情報</h4>
+                    <ul>
+                        <li>表示名</li>
+                        <li>メールアドレス</li>
+                        <li>登録日</li>
+                        <li>自分の登録履歴</li>
+                    </ul>
+                </section>
+            </section>
+
+            <!-- 4. 活用のヒント -->
+            <section id="tips">
+                <h2>4. 活用のヒント</h2>
+
+                <div class="warning-box">
+                    <h4>⏰ 定期的に記録しましょう</h4>
+                    <p>
+                        週に一度、または作業が完了したタイミングで時間を記録すると、正確な時間管理ができます。
+                        毎週金曜日や月曜日など、決まった曜日に記録する習慣をつけるのがおすすめです。
+                    </p>
+                </div>
+
+                <div class="success-box">
+                    <h4>🏷️ タグを効果的に活用しましょう</h4>
+                    <p>
+                        チームで共通のタグを使うことで、プロジェクト別の時間配分が明確になります。
+                    </p>
+                    <ul>
+                        <li><strong>プロジェクト名</strong>: 業務効率化プロジェクト、時間銀行プロジェクトなど</li>
+                        <li><strong>作業種別</strong>: 開発、デザイン、ミーティング、レビューなど</li>
+                        <li><strong>優先度</strong>: 緊急、重要、通常など</li>
+                    </ul>
+                </div>
+
+                <div class="info-box">
+                    <h4>📝 メモを詳しく残しましょう</h4>
+                    <p>
+                        具体的な作業内容をメモに残すことで、振り返りや報告に役立ちます。
+                    </p>
+                    <p><strong>記載例：</strong></p>
+                    <ul>
+                        <li>「ユーザー認証機能のバグ修正（パスワードリセットフローの改善）」</li>
+                        <li>「月次報告書の作成とレビュー依頼」</li>
+                        <li>「チームミーティング：来週のタスク優先順位の決定」</li>
+                    </ul>
+                </div>
+
+                <div class="feature-box">
+                    <h4>📊 ダッシュボードを定期的に確認しましょう</h4>
+                    <p>
+                        定期的にダッシュボードを確認することで、以下のメリットがあります：
+                    </p>
+                    <ul>
+                        <li>チーム全体の活動状況を把握</li>
+                        <li>自分の貢献度を客観的に確認</li>
+                        <li>プロジェクトの進捗を可視化</li>
+                        <li>時間配分の偏りに気づける</li>
+                    </ul>
+                </div>
+
+                <div class="success-box">
+                    <h4>🤝 相互編集機能を活用しましょう</h4>
+                    <p>
+                        チームメンバー同士で記録の精度を高めることができます：
+                    </p>
+                    <ul>
+                        <li>誤字脱字や計算ミスを見つけたら修正</li>
+                        <li>不明確な記録があれば本人に確認して補足</li>
+                        <li>タグの統一や整理に協力</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- 5. よくある質問 -->
+            <section id="faq">
+                <h2>5. よくある質問</h2>
+
+                <h4>Q1: エントリを間違えて作成してしまいました</h4>
+                <div class="feature-box">
+                    <p>
+                        <strong>A:</strong> 「エントリ一覧」から該当のエントリを見つけて、「編集」ボタンで修正するか、
+                        「削除」ボタンで削除できます。相互編集機能により、すべてのエントリが編集・削除可能です。
+                    </p>
+                </div>
+
+                <h4>Q2: 活動日はどのように選べばいいですか？</h4>
+                <div class="feature-box">
+                    <p>
+                        <strong>A:</strong> 作業を実際に行った日付を選択してください。
+                        具体的な日付を記録することで、より正確な時間管理が可能になります。
+                    </p>
+                </div>
+
+                <h4>Q3: 価値スコアとは何ですか？</h4>
+                <div class="feature-box">
+                    <p>
+                        <strong>A:</strong> 価値スコアは、記録時間とフィードバック評価を組み合わせた総合指標です。
+                    </p>
+                    <p><strong>計算式:</strong> <code>時間 × 1.0 + 評価 × 2.0</code></p>
+                    <p>
+                        例えば、10時間の作業で評価5.0を受けた場合：<br>
+                        <code>10 × 1.0 + 5.0 × 2.0 = 20.0</code>
+                    </p>
+                </div>
+
+                <h4>Q4: CSVエクスポートは何に使えますか？</h4>
+                <div class="feature-box">
+                    <p>
+                        <strong>A:</strong> ダッシュボードの「当月CSVエクスポート」ボタンから、
+                        月次データをCSV形式でダウンロードできます。
+                    </p>
+                    <p><strong>活用例：</strong></p>
+                    <ul>
+                        <li>Excelで開いて詳細な分析</li>
+                        <li>月次報告書の作成</li>
+                        <li>外部ツールとの連携</li>
+                        <li>データのバックアップ</li>
+                    </ul>
+                </div>
+
+                <h4>Q5: 他のメンバーのエントリを編集してもいいですか？</h4>
+                <div class="feature-box">
+                    <p>
+                        <strong>A:</strong> 相互編集機能により、技術的にはすべてのエントリを編集できますが、
+                        以下のガイドラインを守ってください：
+                    </p>
+                    <ul>
+                        <li>誤字脱字や明らかなミスの修正は自由に行ってOK</li>
+                        <li>内容に関わる大きな変更は、該当メンバーに確認を取ってから</li>
+                        <li>削除する場合は特に慎重に判断</li>
+                        <li>チームの信頼関係を大切にする</li>
+                    </ul>
+                </div>
+
+                <h4>Q6: ログインしないユーザーのエントリはどうやって作成しますか？</h4>
+                <div class="feature-box">
+                    <p>
+                        <strong>A:</strong> エントリ作成画面で「貢献者」のドロップダウンから該当するユーザーを選択し、
+                        通常通りエントリを作成してください。ログインしないユーザーは、時間記録のためだけに登録されています。
+                    </p>
+                    <p>
+                        新たにそのようなユーザーの追加が必要な場合は、管理者にご連絡ください。
+                    </p>
+                </div>
+
+                <h4>Q7: タグは何個まで設定できますか？</h4>
+                <div class="feature-box">
+                    <p>
+                        <strong>A:</strong> 1つのエントリに最大<strong>10個</strong>のタグを設定できます。
+                        デフォルトタグと過去に使用したタグがオートコンプリートで表示されるので、
+                        積極的に活用してください。
+                    </p>
+                </div>
+
+                <h4>Q8: パスワードを忘れてしまいました</h4>
+                <div class="feature-box">
+                    <p>
+                        <strong>A:</strong> ログイン画面の「パスワードを忘れた場合」リンクをクリックし、
+                        登録したメールアドレスを入力してください。パスワードリセットのリンクが送信されます。
+                    </p>
+                </div>
+            </section>
+
+            <!-- 6. トラブルシューティング -->
+            <section id="troubleshooting">
+                <h2>6. トラブルシューティング</h2>
+
+                <table>
+                    <tr>
+                        <th>症状</th>
+                        <th>原因と対処方法</th>
+                    </tr>
+                    <tr>
+                        <td>ログインできない</td>
+                        <td>
+                            <ul>
+                                <li>メールアドレスとパスワードが正しいか確認</li>
+                                <li>初回の場合は「パスワードを忘れた場合」からパスワード設定</li>
+                                <li>アカウントが作成されているか管理者に確認</li>
+                            </ul>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>ログイン後に画面が空白になる</td>
+                        <td>
+                            <ul>
+                                <li>ブラウザのキャッシュをクリア</li>
+                                <li>別のブラウザで試す</li>
+                                <li>問題が続く場合は管理者に連絡</li>
+                            </ul>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>データが表示されない</td>
+                        <td>
+                            <ul>
+                                <li>ページを再読み込み（F5キー）</li>
+                                <li>ログアウト後、再度ログイン</li>
+                                <li>問題が続く場合は管理者に連絡</li>
+                            </ul>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>エントリが作成できない</td>
+                        <td>
+                            <ul>
+                                <li>必須項目（活動日、時間数）が入力されているか確認</li>
+                                <li>時間数が0〜100の範囲内か確認</li>
+                                <li>ネットワーク接続を確認</li>
+                                <li>エラーメッセージが表示されている場合は管理者に報告</li>
+                            </ul>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>CSVエクスポートができない</td>
+                        <td>
+                            <ul>
+                                <li>ブラウザのポップアップブロックを無効化</li>
+                                <li>ダウンロードフォルダの容量を確認</li>
+                                <li>別のブラウザで試す</li>
+                            </ul>
+                        </td>
+                    </tr>
+                </table>
+
+                <div class="warning-box">
+                    <h4>⚠️ 問題が解決しない場合</h4>
+                    <p>
+                        上記の方法で解決しない場合は、以下の情報を添えて管理者に連絡してください：
+                    </p>
+                    <ul>
+                        <li>発生している症状の詳細</li>
+                        <li>エラーメッセージ（表示されている場合）</li>
+                        <li>使用しているブラウザとバージョン</li>
+                        <li>操作の手順（再現方法）</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- フッター -->
+            <footer>
+                <p>
+                    <strong>Time Bank - チーム時間貢献記録システム</strong><br>
+                    最終更新: 2026年1月
+                </p>
+                <p style="margin-top: 15px; font-size: 0.9em;">
+                    ご質問やご意見がありましたら、管理者までお問い合わせください。<br>
+                    このガイドは継続的に更新されます。
+                </p>
+                <p style="margin-top: 15px; color: #999; font-size: 0.85em;">
+                    © 2026 Time Bank Project. All rights reserved.
+                </p>
+            </footer>
+        </div>
+    </div>
+</body>
+</html>
