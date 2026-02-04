@@ -1,28 +1,14 @@
 import { describe, it, expect } from 'vitest';
 import {
-  getMondayOfWeek,
   formatDateISO,
   normalizeTags,
   entrySchema,
 } from '@/lib/validation/schemas';
 
-describe('getMondayOfWeek', () => {
-  it('should return Monday for a date in the middle of the week', () => {
-    const wednesday = new Date('2025-01-22'); // Wednesday
-    const monday = getMondayOfWeek(wednesday);
-    expect(formatDateISO(monday)).toBe('2025-01-20');
-  });
-
-  it('should return the same date if already Monday', () => {
-    const monday = new Date('2025-01-20'); // Monday
-    const result = getMondayOfWeek(monday);
-    expect(formatDateISO(result)).toBe('2025-01-20');
-  });
-
-  it('should return previous Monday for Sunday', () => {
-    const sunday = new Date('2025-01-26'); // Sunday
-    const monday = getMondayOfWeek(sunday);
-    expect(formatDateISO(monday)).toBe('2025-01-20');
+describe('formatDateISO', () => {
+  it('should format date as YYYY-MM-DD', () => {
+    const date = new Date('2025-01-22T00:00:00Z');
+    expect(formatDateISO(date)).toBe('2025-01-22');
   });
 });
 
@@ -55,7 +41,7 @@ describe('normalizeTags', () => {
 describe('entrySchema', () => {
   it('should validate valid entry data', () => {
     const validData = {
-      week_start: '2025-01-20', // Monday
+      week_start: '2025-01-20',
       hours: 8,
       tags: ['development', 'testing'],
       note: 'Worked on feature X',
@@ -67,9 +53,9 @@ describe('entrySchema', () => {
     expect(result.hours).toBe(8);
   });
 
-  it('should auto-adjust week_start to Monday', () => {
+  it('should preserve the exact date without rounding to Monday', () => {
     const data = {
-      week_start: '2025-01-22', // Wednesday
+      week_start: '2025-01-22', // Wednesday - should stay as Wednesday
       hours: 5,
       tags: [],
       note: '',
@@ -77,7 +63,20 @@ describe('entrySchema', () => {
     };
 
     const result = entrySchema.parse(data);
-    expect(result.week_start).toBe('2025-01-20'); // Previous Monday
+    expect(result.week_start).toBe('2025-01-22'); // Preserved as-is
+  });
+
+  it('should preserve Sunday date without rounding', () => {
+    const data = {
+      week_start: '2026-02-01', // Sunday - the reported bug case
+      hours: 3,
+      tags: [],
+      note: '',
+      contributor_id: '123e4567-e89b-12d3-a456-426614174000',
+    };
+
+    const result = entrySchema.parse(data);
+    expect(result.week_start).toBe('2026-02-01'); // Must NOT become 2026-01-26
   });
 
   it('should reject hours > 100', () => {

@@ -1,16 +1,6 @@
 import { z } from 'zod';
 
 /**
- * Get the Monday of the week containing the given date
- */
-export function getMondayOfWeek(date: Date): Date {
-  const d = new Date(date);
-  const day = d.getDay();
-  const diff = d.getDate() - day + (day === 0 ? -6 : 1); // Adjust when day is Sunday
-  return new Date(d.setDate(diff));
-}
-
-/**
  * Format date as YYYY-MM-DD
  */
 export function formatDateISO(date: Date): string {
@@ -33,17 +23,21 @@ export function normalizeTags(tags: string[]): string[] {
 }
 
 /**
+ * Recipient item schema (for entry_recipients)
+ */
+export const recipientItemSchema = z.object({
+  recipient_id: z.string().uuid(),
+  recipient_type: z.enum(['user', 'guild']),
+});
+
+export type RecipientItemInput = z.input<typeof recipientItemSchema>;
+
+/**
  * Entry schema with validation
  */
 export const entrySchema = z.object({
   week_start: z.string()
-    .regex(/^\d{4}-\d{2}-\d{2}$/, 'Invalid date format (YYYY-MM-DD required)')
-    .transform((val) => {
-      // Parse date and ensure it's a Monday
-      const date = new Date(val + 'T00:00:00Z');
-      const monday = getMondayOfWeek(date);
-      return formatDateISO(monday);
-    }),
+    .regex(/^\d{4}-\d{2}-\d{2}$/, 'Invalid date format (YYYY-MM-DD required)'),
   hours: z.number()
     .positive('Hours must be greater than 0')
     .max(100, 'Hours must not exceed 100'),
@@ -54,7 +48,7 @@ export const entrySchema = z.object({
     .max(1000, 'Note must not exceed 1000 characters')
     .default(''),
   contributor_id: z.string().uuid(),
-  recipient_id: z.string().uuid().nullable().optional(),
+  recipients: z.array(recipientItemSchema).default([]),
 });
 
 export type EntryInput = z.input<typeof entrySchema>;

@@ -36,7 +36,7 @@ export type RecentActivity = {
   tags: string[];
   note: string;
   contributor_name: string;
-  recipient_name: string | null;
+  recipient_names: string[];
   created_at: string;
 };
 
@@ -193,13 +193,23 @@ export async function getKPIStats(userId: string): Promise<KPIStats> {
 
   const providedHours = providedEntries?.reduce((sum, e) => sum + e.hours, 0) || 0;
 
-  // 受け取った時間（自分が recipient のエントリ）
-  const { data: receivedEntries } = await supabase
-    .from('entries')
-    .select('hours')
-    .eq('recipient_id', userId);
+  // 受け取った時間（entry_recipients で自分が recipient のエントリ）
+  const { data: receivedRecipients } = await supabase
+    .from('entry_recipients')
+    .select('entry_id')
+    .eq('recipient_id', userId)
+    .eq('recipient_type', 'user');
 
-  const receivedHours = receivedEntries?.reduce((sum, e) => sum + e.hours, 0) || 0;
+  let receivedHours = 0;
+  if (receivedRecipients && receivedRecipients.length > 0) {
+    const entryIds = receivedRecipients.map((r) => r.entry_id);
+    const { data: receivedEntries } = await supabase
+      .from('entries')
+      .select('hours')
+      .in('id', entryIds);
+
+    receivedHours = receivedEntries?.reduce((sum, e) => sum + e.hours, 0) || 0;
+  }
 
   // 時間収支
   const balanceHours = providedHours - receivedHours;
@@ -220,21 +230,39 @@ export async function getKPIStats(userId: string): Promise<KPIStats> {
     ? evaluations.reduce((sum, e) => sum + e.score, 0) / evaluations.length
     : 0;
 
-  // 協働メンバー数（自分が contributor または recipient のエントリの相手）
-  const { data: asContributor } = await supabase
+  // 協働メンバー数（entry_recipients ベースで算出）
+  // 自分が contributor のエントリの受信者（user タイプ）
+  const { data: myEntries } = await supabase
     .from('entries')
-    .select('recipient_id')
-    .eq('contributor_id', userId)
-    .not('recipient_id', 'is', null);
-
-  const { data: asRecipient } = await supabase
-    .from('entries')
-    .select('contributor_id')
-    .eq('recipient_id', userId);
+    .select('id')
+    .eq('contributor_id', userId);
 
   const collaborators = new Set<string>();
-  asContributor?.forEach((e) => e.recipient_id && collaborators.add(e.recipient_id));
-  asRecipient?.forEach((e) => collaborators.add(e.contributor_id));
+
+  if (myEntries && myEntries.length > 0) {
+    const myEntryIds = myEntries.map((e) => e.id);
+    const { data: myRecipients } = await supabase
+      .from('entry_recipients')
+      .select('recipient_id')
+      .in('entry_id', myEntryIds)
+      .eq('recipient_type', 'user');
+
+    myRecipients?.forEach((r) => collaborators.add(r.recipient_id));
+  }
+
+  // 自分が受信者のエントリの contributor
+  if (receivedRecipients && receivedRecipients.length > 0) {
+    const receivedEntryIds = receivedRecipients.map((r) => r.entry_id);
+    const { data: contributors } = await supabase
+      .from('entries')
+      .select('contributor_id')
+      .in('id', receivedEntryIds);
+
+    contributors?.forEach((e) => collaborators.add(e.contributor_id));
+  }
+
+  // 自分自身を除外
+  collaborators.delete(userId);
 
   return {
     providedHours,
@@ -337,8 +365,7 @@ export async function getRecentActivities(limit: number = 5): Promise<RecentActi
       tags,
       note,
       created_at,
-      contributor:profiles!entries_contributor_id_fkey(display_name),
-      recipient:profiles!entries_recipient_id_fkey(display_name)
+      contributor:profiles!entries_contributor_id_fkey(display_name)
     `)
     .order('created_at', { ascending: false })
     .limit(limit);
@@ -347,7 +374,49 @@ export async function getRecentActivities(limit: number = 5): Promise<RecentActi
     return [];
   }
 
-  // Supabaseのjoinクエリ結果をマッピング
+  // Fetch recipients for all entries in batch
+  const entryIds = entries.map((e: Record<string, unknown>) => e.id as string);
+  const { data: allRecipients } = await supabase
+    .from('entry_recipients')
+    .select('entry_id, recipient_id, recipient_type')
+    .in('entry_id', entryIds);
+
+  // Collect unique recipient IDs by type
+  const userIds = new Set<string>();
+  const guildIds = new Set<string>();
+  allRecipients?.forEach((r) => {
+    if (r.recipient_type === 'user') userIds.add(r.recipient_id);
+    if (r.recipient_type === 'guild') guildIds.add(r.recipient_id);
+  });
+
+  // Fetch user and guild names
+  const nameMap = new Map<string, string>();
+
+  if (userIds.size > 0) {
+    const { data: users } = await supabase
+      .from('profiles')
+      .select('id, display_name')
+      .in('id', Array.from(userIds));
+    users?.forEach((u) => nameMap.set(u.id, u.display_name));
+  }
+
+  if (guildIds.size > 0) {
+    const { data: guilds } = await supabase
+      .from('guilds')
+      .select('id, name')
+      .in('id', Array.from(guildIds));
+    guilds?.forEach((g) => nameMap.set(g.id, g.name));
+  }
+
+  // Build a map of entry_id -> recipient names
+  const recipientsByEntry = new Map<string, string[]>();
+  allRecipients?.forEach((r) => {
+    const names = recipientsByEntry.get(r.entry_id) || [];
+    const prefix = r.recipient_type === 'guild' ? '(組織) ' : '';
+    names.push(prefix + (nameMap.get(r.recipient_id) || 'Unknown'));
+    recipientsByEntry.set(r.entry_id, names);
+  });
+
   return entries.map((e: Record<string, unknown>) => ({
     id: e.id as string,
     week_start: e.week_start as string,
@@ -355,7 +424,7 @@ export async function getRecentActivities(limit: number = 5): Promise<RecentActi
     tags: (e.tags as string[]) || [],
     note: (e.note as string) || '',
     contributor_name: ((e.contributor as { display_name?: string } | null)?.display_name) || 'Unknown',
-    recipient_name: ((e.recipient as { display_name?: string } | null)?.display_name) || null,
+    recipient_names: recipientsByEntry.get(e.id as string) || [],
     created_at: e.created_at as string,
   }));
 }

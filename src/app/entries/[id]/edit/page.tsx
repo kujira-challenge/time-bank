@@ -38,6 +38,17 @@ export default async function EntryEditPage({ params }: PageProps) {
     .eq('active', true)
     .order('display_name');
 
+  // エントリの受信者を取得
+  const { data: recipients } = await supabase
+    .from('entry_recipients')
+    .select('recipient_id, recipient_type')
+    .eq('entry_id', id);
+
+  const initialRecipients = (recipients || []).map((r) => ({
+    recipient_id: r.recipient_id as string,
+    recipient_type: r.recipient_type as 'user' | 'guild',
+  }));
+
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-2xl mx-auto">
@@ -56,6 +67,7 @@ export default async function EntryEditPage({ params }: PageProps) {
             mode="edit"
             initialData={entry}
             entryId={id}
+            initialRecipients={initialRecipients}
           />
         </div>
       </div>

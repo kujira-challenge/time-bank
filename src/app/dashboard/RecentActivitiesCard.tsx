@@ -46,18 +46,20 @@ export default function RecentActivitiesCard({ activities }: RecentActivitiesCar
           >
             <div className="flex justify-between items-start mb-2">
               <div className="flex-1">
-                <div className="flex items-center gap-2 mb-1">
+                <div className="flex items-center gap-2 mb-1 flex-wrap">
                   <span className="font-medium text-gray-900">{activity.contributor_name}</span>
-                  {activity.recipient_name && (
+                  {activity.recipient_names.length > 0 && (
                     <>
                       <span className="text-gray-400">→</span>
-                      <span className="font-medium text-gray-900">{activity.recipient_name}</span>
+                      <span className="font-medium text-gray-900">
+                        {activity.recipient_names.join(', ')}
+                      </span>
                     </>
                   )}
                 </div>
                 <div className="flex items-center gap-3 text-sm text-gray-600">
                   <span className="font-semibold text-blue-600">{activity.hours}h</span>
-                  <span>週始：{formatDate(activity.week_start)}</span>
+                  <span>活動日：{formatDate(activity.week_start)}</span>
                 </div>
               </div>
               <span className="text-xs text-gray-500 whitespace-nowrap ml-4">

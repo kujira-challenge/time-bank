@@ -4,33 +4,39 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import TagMultiSelect from '@/components/TagMultiSelect';
-import { createEntry, updateEntry, getAllTags } from '../actions';
+import RecipientMultiSelect from '@/components/RecipientMultiSelect';
+import { createEntry, updateEntry, getAllTags, getRecipientOptions } from '../actions';
 import { formatDateISO } from '@/lib/validation/schemas';
 import { DEFAULT_TAGS } from '@/constants/tags';
-// import DetailedEvaluationSection from './DetailedEvaluationSection'; // 一時的に未使用
-import type { EvaluationAxis, EvaluationItem, EntryDB } from '@/types';
+import type { EvaluationAxis, EvaluationItem, EntryDB, RecipientOption, RecipientType } from '@/types';
 
 type UserOption = {
   id: string;
   display_name: string;
 };
 
+type SelectedRecipient = {
+  recipient_id: string;
+  recipient_type: RecipientType;
+};
+
 type EntryCreateFormProps = {
   currentUserId: string;
   allUsers: UserOption[];
-  evaluationAxes?: EvaluationAxis[]; // 一時的に未使用（recipient撤去のため）
+  evaluationAxes?: EvaluationAxis[];
   mode?: 'create' | 'edit';
   initialData?: Partial<EntryDB>;
   entryId?: string;
+  initialRecipients?: SelectedRecipient[];
 };
 
 export default function EntryCreateForm({
   currentUserId,
   allUsers,
-  // evaluationAxes, // 一時的に未使用（recipient撤去のため）
   mode = 'create',
   initialData,
   entryId,
+  initialRecipients = [],
 }: EntryCreateFormProps) {
   const router = useRouter();
   const [formData, setFormData] = useState({
@@ -39,18 +45,26 @@ export default function EntryCreateForm({
     hours: initialData?.hours?.toString() || '',
     tags: initialData?.tags || ([] as string[]),
     note: initialData?.note || '',
-    // recipient_id: '', // 一時的にUIから撤去（将来的に復活可能性あり）
+    recipients: initialRecipients,
   });
-  const [detailedEvaluations] = useState<EvaluationItem[]>([]); // 一時的に未使用（recipient撤去のため）
+  const [detailedEvaluations] = useState<EvaluationItem[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [tagSuggestions, setTagSuggestions] = useState<string[]>([]);
+  const [recipientOptions, setRecipientOptions] = useState<RecipientOption[]>([]);
 
   useEffect(() => {
     // Fetch existing tags for suggestions
     getAllTags().then((result) => {
       if (result.success) {
         setTagSuggestions(result.tags);
+      }
+    });
+
+    // Fetch recipient options (users + guilds)
+    getRecipientOptions().then((result) => {
+      if (result.success) {
+        setRecipientOptions(result.options);
       }
     });
 
@@ -73,8 +87,7 @@ export default function EntryCreateForm({
       formDataObj.append('hours', formData.hours);
       formDataObj.append('tags', JSON.stringify(formData.tags));
       formDataObj.append('note', formData.note);
-      // recipient_id は一時的にUIから撤去（DB/API側ではnullを許容）
-      formDataObj.append('recipient_id', '');
+      formDataObj.append('recipients', JSON.stringify(formData.recipients));
       formDataObj.append('detailed_evaluations', JSON.stringify(detailedEvaluations));
 
       const result = mode === 'create'
@@ -199,31 +212,20 @@ export default function EntryCreateForm({
           />
         </div>
 
-        {/* Recipient - 時間を受け取った相手（一時的にUIから撤去） */}
-        {/*
+        {/* Recipients - Multi-select for users and guilds */}
         <div>
-          <label htmlFor="recipient_id" className="block text-sm font-medium text-gray-700 mb-2">
-            時間を受け取った相手（任意）
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            貢献先（任意・複数選択可）
           </label>
-          <select
-            id="recipient_id"
-            name="recipient_id"
-            value={formData.recipient_id}
-            onChange={(e) => setFormData((prev) => ({ ...prev, recipient_id: e.target.value }))}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-          >
-            <option value="">-- 選択しない --</option>
-            {allUsers.map((user) => (
-              <option key={user.id} value={user.id}>
-                {user.display_name}
-              </option>
-            ))}
-          </select>
+          <RecipientMultiSelect
+            options={recipientOptions}
+            selected={formData.recipients}
+            onChange={(recipients) => setFormData((prev) => ({ ...prev, recipients }))}
+          />
           <p className="text-xs text-gray-500 mt-1">
-            この時間を誰のために提供したかを選択できます
+            この時間を誰（個人）または何（組織/ギルド）のために提供したかを選択できます
           </p>
         </div>
-        */}
 
         {/* Note */}
         <div>
@@ -244,17 +246,6 @@ export default function EntryCreateForm({
             {formData.note.length} / 1000 文字
           </p>
         </div>
-
-        {/* 相手への詳細評価（任意）- recipient_id がUIから撤去されたため一時的に無効化 */}
-        {/*
-        {formData.recipient_id && (
-          <DetailedEvaluationSection
-            evaluationAxes={evaluationAxes}
-            selectedEvaluations={detailedEvaluations}
-            onChange={setDetailedEvaluations}
-          />
-        )}
-        */}
 
         {/* Submit */}
         <div className="pt-6 flex gap-4">

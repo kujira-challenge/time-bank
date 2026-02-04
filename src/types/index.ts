@@ -15,14 +15,50 @@ export type Profile = {
  */
 export type EntryDB = {
   id: string;          // UUID
-  week_start: string;  // YYYY-MM-DD形式の週開始日
+  week_start: string;  // YYYY-MM-DD形式の活動日
   hours: number;
   tags: string[];
   note: string;
   contributor_id: string; // UUID (profiles.id)
-  recipient_id: string | null; // UUID (profiles.id) - 時間を受け取った相手
+  recipient_id: string | null; // UUID (profiles.id) - レガシー（entry_recipientsに移行済み）
   created_at: string;     // ISO 8601形式
   updated_at: string;     // ISO 8601形式
+};
+
+/**
+ * ギルド（組織）型定義（Supabase用）
+ */
+export type Guild = {
+  id: string;          // UUID
+  name: string;
+  description: string;
+  created_at: string;  // ISO 8601形式
+  updated_at: string;  // ISO 8601形式
+};
+
+/**
+ * 貢献先の種別
+ */
+export type RecipientType = 'user' | 'guild';
+
+/**
+ * エントリ受信者（中間テーブル）型定義
+ */
+export type EntryRecipient = {
+  id: string;              // UUID
+  entry_id: string;        // UUID (entries.id)
+  recipient_id: string;    // UUID (profiles.id or guilds.id)
+  recipient_type: RecipientType;
+  created_at: string;      // ISO 8601形式
+};
+
+/**
+ * 受信者の表示用型（UI向け）
+ */
+export type RecipientOption = {
+  id: string;
+  name: string;
+  type: RecipientType;
 };
 
 /**
