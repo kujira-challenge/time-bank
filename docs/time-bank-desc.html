@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Time Bank - コンセプトとビジョン</title>
     <style>
+        /* --- 基本スタイル --- */
         * {
             margin: 0;
             padding: 0;
@@ -13,150 +14,178 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
-            line-height: 1.7;
+            line-height: 1.8;
             color: #333;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             padding: 20px;
         }
 
         .container {
-            max-width: 1000px;
+            max-width: 900px;
             margin: 0 auto;
             background: white;
-            border-radius: 12px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            border-radius: 16px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
             overflow: hidden;
         }
 
+        /* --- ヘッダー（視認性向上版） --- */
         header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            padding: 50px 40px;
+            padding: 70px 40px;
             text-align: center;
         }
 
         header h1 {
             font-size: 2.8em;
-            margin-bottom: 10px;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+            margin-bottom: 15px;
+            text-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
         }
 
         header p {
-            font-size: 1.2em;
-            opacity: 0.95;
+            font-size: 1.3em;
+            /* 修正ポイント：不透明度を上げ、影をつけて視認性を確保 */
+            color: rgba(255, 255, 255, 0.95);
+            font-weight: 500;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+            letter-spacing: 0.02em;
         }
 
+        /* --- コンテンツエリア --- */
         .content {
-            padding: 40px;
+            padding: 50px 60px;
         }
 
         section {
-            margin-bottom: 50px;
-            scroll-margin-top: 20px;
+            margin-bottom: 60px;
         }
 
         h2 {
             color: #667eea;
             font-size: 1.8em;
-            margin-bottom: 20px;
+            margin-bottom: 25px;
             padding-bottom: 10px;
             border-bottom: 3px solid #667eea;
+            display: flex;
+            align-items: center;
         }
 
         h3 {
             color: #764ba2;
             font-size: 1.4em;
-            margin: 25px 0 15px 0;
+            margin: 30px 0 15px 0;
         }
 
         p {
-            margin-bottom: 15px;
-            color: #555;
+            margin-bottom: 20px;
+            color: #444;
         }
 
-        ul {
-            margin: 15px 0 15px 30px;
-            color: #555;
-        }
-
-        ul li {
-            margin: 8px 0;
-        }
-
+        /* --- ボックスデザイン --- */
         .feature-box {
             background: #f8f9fa;
-            padding: 25px;
-            border-radius: 8px;
-            margin: 20px 0;
-            border-left: 4px solid #667eea;
-        }
-
-        .feature-box h4 {
-            color: #667eea;
-            margin-bottom: 10px;
+            padding: 30px;
+            border-radius: 12px;
+            margin: 25px 0;
+            border-left: 5px solid #667eea;
         }
 
         .info-box {
-            background: #d1ecf1;
-            border: 1px solid #17a2b8;
-            border-left: 4px solid #17a2b8;
-            padding: 20px;
-            border-radius: 8px;
-            margin: 20px 0;
+            background: #eef9fb;
+            border: 1px solid #b6e4eb;
+            border-left: 5px solid #17a2b8;
+            padding: 25px;
+            border-radius: 12px;
+            margin: 25px 0;
         }
 
         .success-box {
-            background: #d4edda;
-            border: 1px solid #28a745;
-            border-left: 4px solid #28a745;
-            padding: 25px;
-            border-radius: 8px;
-            margin: 20px 0;
-        }
-
-        .highlight {
-            background: #fffacd;
-            padding: 2px 6px;
-            border-radius: 3px;
-            font-weight: 600;
-        }
-
-        .badge-guild {
-            background: #28a745;
-            color: white;
-            padding: 4px 10px;
+            background: #f0f9f1;
+            border: 1px solid #cceadb;
+            border-left: 5px solid #28a745;
+            padding: 30px;
             border-radius: 12px;
-            font-size: 0.85em;
-            font-weight: 600;
-            vertical-align: middle;
-            margin-left: 10px;
+            margin: 25px 0;
         }
 
-        .note-box {
+        .note-tag {
             background: #eee;
-            padding: 15px;
-            border-radius: 6px;
-            font-size: 0.95em;
             color: #666;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 0.95em;
             text-align: center;
             margin: 30px 0;
         }
 
+        ul {
+            margin: 15px 0 15px 25px;
+            list-style-type: none;
+        }
+
+        ul li {
+            margin: 10px 0;
+            position: relative;
+        }
+
+        ul li::before {
+            content: "•";
+            color: #667eea;
+            font-weight: bold;
+            display: inline-block; 
+            width: 1em;
+            margin-left: -1em;
+        }
+
+        .highlight {
+            background: linear-gradient(transparent 70%, #fff9c4 70%);
+            font-weight: bold;
+            padding: 0 4px;
+        }
+
+        .badge {
+            background: #28a745;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.6em;
+            vertical-align: middle;
+            margin-left: 15px;
+            text-shadow: none;
+        }
+
+        /* --- フッター --- */
         footer {
             background: #f8f9fa;
             padding: 40px;
-            text-align: center;
+            text-align: left;
+            border-top: 1px solid #eee;
             color: #666;
-            border-top: 1px solid #ddd;
         }
 
+        .footer-cta {
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px dashed #667eea;
+            margin-bottom: 20px;
+        }
+
+        /* --- レスポンシブ --- */
         @media (max-width: 768px) {
+            .content { padding: 30px 20px; }
             header h1 { font-size: 2em; }
-            .content { padding: 20px; }
+            header { padding: 50px 20px; }
         }
     </style>
 </head>
 <body>
+
     <div class="container">
         <header>
             <h1>🕒 Time Bank Concept</h1>
@@ -165,14 +194,13 @@
 
         <div class="content">
             <section>
-                <h2>1. 時間銀行とは</h2>
+                <h2>時間銀行について（まずは考え方の共有）</h2>
                 <p>
-                    時間銀行は、<span class="highlight">「人が誰かのために使った時間」</span>を、価値として残すための仕組みです。<br>
+                    時間銀行は、<span class="highlight">「人が誰かのために使った時間」を、価値として残すための仕組み</span>です。<br>
                     ここで言う価値は、成果物や金額に直接置き換えられるものではありません。
                 </p>
 
                 <div class="feature-box">
-                    <h4>🌱 関係性の中で生まれる価値の例</h4>
                     <ul>
                         <li>話をじっくり聴いた時間</li>
                         <li>一緒に考え、整理した時間</li>
@@ -188,30 +216,25 @@
             </section>
 
             <section>
-                <h2>2. なぜ時間を記録するのか</h2>
+                <h2>なぜ時間を記録するのか</h2>
                 <p>
                     時間銀行が扱うのは、単なる作業時間や稼働時間ではありません。<br>
                     <span class="highlight">「誰のために、どんな関わり方をしたか」</span>という文脈ごと、時間を記録します。
                 </p>
-                
-                <div class="info-box">
-                    <h4>💡 「どう関わったか」へのフォーカス</h4>
-                    <p>
-                        人の価値は、「何をどれだけやったか」よりも、「どう関わったか」に現れることが多いからです。<br>
-                        時間銀行は、自分がどんな場面で役に立ちやすいのか、どんな関わり方が自然なのかを、あとから理解するための仕組みでもあります。
-                    </p>
-                </div>
+                <p>
+                    人の価値は、「何をどれだけやったか」よりも、「どう関わったか」に現れることが多いからです。<br>
+                    時間銀行は、自分がどんな場面で役に立ちやすいのか、どんな関わり方が自然なのかを、あとから理解するための仕組みでもあります。
+                </p>
             </section>
 
             <section>
-                <h2>3. 評価について</h2>
+                <h2>評価について</h2>
                 <p>
                     時間銀行における評価は、比べるためのものではありません。<br>
                     評価は、<strong>価値の種類を言葉にするための補助線</strong>です。
                 </p>
 
-                <div class="feature-box">
-                    <h4>🔍 評価の視点（自分や他者の強みを理解するために）</h4>
+                <div class="info-box">
                     <ul>
                         <li>期待を超えるアウトプット</li>
                         <li>思考の言語化</li>
@@ -222,15 +245,15 @@
                 </div>
 
                 <p>これは優劣をつけるためではなく、自分や他者の強みを理解するための視点です。</p>
-
-                <div class="note-box">
+                
+                <div class="note-tag">
                     ここまでが、時間銀行の基本的な考え方です。<br>
                     この時点では、あくまで「個人の内省や理解のための仕組み」です。
                 </div>
             </section>
 
             <section>
-                <h2>4. ギルドでの使い方（想定）<span class="badge-guild">コミュニティ基盤</span></h2>
+                <h2>その延長として、ギルドでの使い方を考えています（想定）</h2>
                 <p>
                     この考え方を、ギルドという共同体に広げるとどうなるか。<br>
                     その一つの形として、時間銀行をギルド内の共通基盤として使うことを考えています。
@@ -239,8 +262,7 @@
                     ギルドでは、金銭による会費の代わりに、<span class="highlight">時間という形での関与</span>を重視したいと思っています。
                 </p>
 
-                <div class="info-box">
-                    <h4>例えば：</h4>
+                <div class="feature-box">
                     <ul>
                         <li>毎月一定時間、ギルドや活動への貢献を行う</li>
                         <li>運営や場づくりへの関与</li>
@@ -250,25 +272,26 @@
 
                 <p>
                     これは「労働を課す」ためのものではありません。<br>
-                    この場に属する以上、何らかの形で関わり続けることを前提にしたい、という意思表明です。
+                    <strong>この場に属する以上、何らかの形で関わり続けることを前提にしたい</strong>、という意思表明です。
                 </p>
             </section>
 
             <section>
-                <h2>5. 時間のやり取りが生むもの</h2>
-                <p>
-                    時間銀行を介したやり取りは、助け合いであると同時に、互いの役割や強みを浮かび上がらせます。
-                </p>
-                <ul>
-                    <li>誰がどんな場面で支えているのか</li>
-                    <li>どんな関わり方が自然にできているのか</li>
-                    <li>負荷が偏っていないか</li>
-                </ul>
+                <h2>時間のやり取りが生むもの</h2>
+                <p>時間銀行を介したやり取りは、助け合いであると同時に、互いの役割や強みを浮かび上がらせます。</p>
+                
+                <div class="info-box">
+                    <ul>
+                        <li>誰がどんな場面で支えているのか</li>
+                        <li>どんな関わり方が自然にできているのか</li>
+                        <li>負荷が偏っていないか</li>
+                    </ul>
+                </div>
                 <p>これらを感覚ではなく、<strong>履歴として把握</strong>できるようになります。</p>
             </section>
 
             <section>
-                <h2>6. 目指しているのは、管理ではなく循環</h2>
+                <h2>目指しているのは、管理ではなく循環</h2>
                 <div class="success-box">
                     <p>
                         時間銀行は、貢献量を競うための仕組みでも、誰かを縛る制度でもありません。<br>
@@ -276,17 +299,12 @@
                     </p>
                 </div>
             </section>
-
-            <footer>
-                <p>
-                    今後の流れとしては、時間銀行の考え方をもとにしたアプリをすでに作っているので、これを使って段階的にお試しいただく予定です。<br>
-                    具体的な使い方やマニュアル、細かい説明については、別途あらためて共有します。
-                </p>
-                <p style="margin-top: 20px; color: #999; font-size: 0.85em;">
-                    © 2026 Time Bank Project. All rights reserved.
-                </p>
-            </footer>
         </div>
+
+        <footer>
+            <p style="font-size: 0.8em; color: #aaa;">© 2026 Time Bank Project. すべての考え方を尊重し、価値を可視化します。</p>
+        </footer>
     </div>
+
 </body>
 </html>
