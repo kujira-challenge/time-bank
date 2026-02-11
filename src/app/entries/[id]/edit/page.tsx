@@ -38,6 +38,12 @@ export default async function EntryEditPage({ params }: PageProps) {
     .eq('active', true)
     .order('display_name');
 
+  // 評価軸マスタを取得
+  const { data: evaluationAxes } = await supabase
+    .from('evaluation_axes')
+    .select('*')
+    .order('display_order');
+
   // エントリの受信者を取得
   const { data: recipients } = await supabase
     .from('entry_recipients')
@@ -64,6 +70,7 @@ export default async function EntryEditPage({ params }: PageProps) {
           <EntryCreateForm
             currentUserId={user.id}
             allUsers={allUsers || []}
+            evaluationAxes={evaluationAxes || []}
             mode="edit"
             initialData={entry}
             entryId={id}

@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import TagMultiSelect from '@/components/TagMultiSelect';
 import RecipientMultiSelect from '@/components/RecipientMultiSelect';
+import DetailedEvaluationSection from './DetailedEvaluationSection';
 import { createEntry, updateEntry, getAllTags, getRecipientOptions } from '../actions';
 import { formatDateISO } from '@/lib/validation/schemas';
 import { DEFAULT_TAGS } from '@/constants/tags';
@@ -33,6 +34,7 @@ type EntryCreateFormProps = {
 export default function EntryCreateForm({
   currentUserId,
   allUsers,
+  evaluationAxes = [],
   mode = 'create',
   initialData,
   entryId,
@@ -47,7 +49,7 @@ export default function EntryCreateForm({
     note: initialData?.note || '',
     recipients: initialRecipients,
   });
-  const [detailedEvaluations] = useState<EvaluationItem[]>([]);
+  const [detailedEvaluations, setDetailedEvaluations] = useState<EvaluationItem[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [tagSuggestions, setTagSuggestions] = useState<string[]>([]);
@@ -246,6 +248,15 @@ export default function EntryCreateForm({
             {formData.note.length} / 1000 文字
           </p>
         </div>
+
+        {/* Detailed Evaluation */}
+        {evaluationAxes.length > 0 && (
+          <DetailedEvaluationSection
+            evaluationAxes={evaluationAxes}
+            selectedEvaluations={detailedEvaluations}
+            onChange={setDetailedEvaluations}
+          />
+        )}
 
         {/* Submit */}
         <div className="pt-6 flex gap-4">

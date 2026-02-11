@@ -22,6 +22,12 @@ export default async function EntriesCreatePage() {
     .eq('active', true)
     .order('display_name');
 
+  // 評価軸マスタを取得
+  const { data: evaluationAxes } = await supabase
+    .from('evaluation_axes')
+    .select('*')
+    .order('display_order');
+
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-2xl mx-auto">
@@ -37,6 +43,7 @@ export default async function EntriesCreatePage() {
           <EntryCreateForm
             currentUserId={user.id}
             allUsers={allUsers || []}
+            evaluationAxes={evaluationAxes || []}
           />
         </div>
       </div>
